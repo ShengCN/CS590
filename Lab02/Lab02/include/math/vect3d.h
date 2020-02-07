@@ -2,6 +2,8 @@
 #define __VECT3D_H__
 
 #include <memory.h>
+#include <sstream>
+#include <string>
 
 class Vect3d
 {
@@ -153,6 +155,11 @@ public:
 		}
 	}
 
+	std::string to_string() {
+		std::ostringstream oss;
+		oss << v[0] << "," << v[1] << "," << v[2];
+		return oss.str();
+	}
 
 	//unary operators
 	Vect3d operator-(void) const {return Vect3d(-v[0], -v[1], -v[2]);}

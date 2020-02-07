@@ -50,7 +50,9 @@ GLfloat  angleIncrement=defaultIncrement;
 	Lab 2 related
 **********************************/
 int total_point_num = 12;
-vector <Vect3d> beizer_points;
+const int piece_num = 3;
+int piece_sample_num = 30;
+vector<vector <Vect3d>> pieces_beizer_points;
 vector <Vect3d> v;   //all the points will be stored here
 
 //window size
@@ -129,26 +131,27 @@ inline Vect3d P(GLfloat t)
 	return Vect3d(rad*(float)sin(rot*M_PI*t),height*t,rad*(float)cos(rot*M_PI*t)); //spiral with radius rad, height, and rotations rot
 }
 
+void init_beizer() {
+	pieces_beizer_points.resize(piece_num);
+	for(int i = 0; i < piece_num; ++i) {
+		random_control_points(pieces_beizer_points[i]);
+		
+		// keep C-1
+		if(i!=0) {
+			pieces_beizer_points[i][0] = pieces_beizer_points[i - 1][3];
+			pieces_beizer_points[i][1] = 2.0f * pieces_beizer_points[i - 1][3] - pieces_beizer_points[i - 1][2];
+		}
+	}
+}
 
 // Call THIS for a new curve. It clears the old one first
 void InitArray(int n)
 {
 	v.clear();
-	const int total_constraint_point = 4;
-	beizer_points.resize(total_constraint_point);
+
+	// const int total_constraint_point = 4;
+	// random_control_points(beizer_points, total_constraint_point);
 	
-	// initialize beizer points
-	srand(19950220);	// keep same beizer
-	for(int i = 0; i < total_constraint_point; ++i) {
-		//random_point(beizer_points[i]);
-	}
-
-	beizer_points[0] = Vect3d(0.0, 0.0, 0.0);
-	beizer_points[1] = Vect3d(1.0, 1.0, 0.0);
-	beizer_points[2] = Vect3d(2.0, 1.0, 0.0);
-	beizer_points[3] = Vect3d(3.0, 0.0, 0.0);
-
-
 	// CreateCurve(&v,n); 
 }
 
@@ -177,10 +180,16 @@ void Lab02() {
 
 	CoordSyst();
 	//draw the points
-	if (pointsFlag)
-		for (unsigned int i = 0; i < v.size(); i++) {
-			DrawPoint(v[i], blue);
+	if (pointsFlag) {
+		//for (unsigned int i = 0; i < v.size(); i++) {
+		//	DrawPoint(v[i], blue);
+		//}
+
+		for(auto &bp: pieces_beizer_points) {
+			for(auto &p:bp)
+				DrawPoint(p, red);
 		}
+	}
 
 	// visualize beizer curves
 	if (curveFlag) {
@@ -233,7 +242,12 @@ void Kbd(unsigned char a, int x, int y)//keyboard callback
 		break;
 	}
 	case 'b': {
-			random_points_beizer(beizer_points, 30, v);
+			v.clear();
+			for(int i = 0;i < piece_num; ++i) {
+				std::vector<Vect3d> piece_samples;
+				sample_beizer(pieces_beizer_points[i], piece_sample_num, piece_samples);
+				v.insert(v.end(), piece_samples.begin(), piece_samples.end());
+			}
 			break;
 		}
 	}
@@ -311,24 +325,27 @@ void MouseMotion(int x, int y) {
 
 int main(int argc, char **argv)
 { 
-  glutInitDisplayString("stencil>=2 rgb double depth samples");
-  glutInit(&argc, argv);
-  glutInitWindowSize(wWindow,hWindow);
-  glutInitWindowPosition(500,100);
-  glutCreateWindow("Surface of Revolution");
-  //GLenum err = glewInit();
-  // if (GLEW_OK != err){
-  // fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
-  //}
-  glutDisplayFunc(Display);
-  glutIdleFunc(Idle);
-  glutReshapeFunc(Reshape);
-  glutKeyboardFunc(Kbd); //+ and -
-  glutSpecialUpFunc(NULL); 
-  glutSpecialFunc(NULL);
-  glutMouseFunc(Mouse);
-  glutMotionFunc(MouseMotion);
-  InitArray(steps);
-  glutMainLoop();
-  return 0;        
+	srand(19950220);	// fake random numbers
+
+	glutInitDisplayString("stencil>=2 rgb double depth samples");
+	glutInit(&argc, argv);
+	glutInitWindowSize(wWindow,hWindow);
+	glutInitWindowPosition(500,100);
+	glutCreateWindow("Surface of Revolution");
+	//GLenum err = glewInit();
+	// if (GLEW_OK != err){
+	// fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+	//}
+	glutDisplayFunc(Display);
+	glutIdleFunc(Idle);
+	glutReshapeFunc(Reshape);
+	glutKeyboardFunc(Kbd); //+ and -
+	glutSpecialUpFunc(NULL); 
+	glutSpecialFunc(NULL);
+	glutMouseFunc(Mouse);
+	glutMotionFunc(MouseMotion);
+	InitArray(steps);
+	init_beizer();
+	glutMainLoop();
+	return 0;        
 }

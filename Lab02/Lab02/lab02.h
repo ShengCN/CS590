@@ -15,12 +15,11 @@ inline void random_point(Vect3d &out_vec, Vect3d scale = Vect3d(1.0f, 1.0f, 1.0f
 	out_vec = Vect3d(random11() * scale.GetX(), random11() * scale.GetY(), random11() * scale.GetZ());
 }
 
-// sampling points from constraint points
-// cpoints: constraint points(2n + 2), where n is # of beizer curves
-// sampling_num: total sample #, assume sampling_number is factor of pieces
-// [output] points: sampled points from beizer curves 
-void create_beizer(const std::vector<Vect3d> &cpoints, const int sampling_num, std::vector<Vect3d> &point);
-
 void random_points(std::vector<Vect3d> &a, int n);
 
-void random_points_beizer(std::vector<Vect3d> &control_points, int n, std::vector<Vect3d> &sampled_points);
+void random_control_points(std::vector<Vect3d> &control_points, int n=4);
+
+// [input]  cpoints: 4 constraints points
+// [input]  sampling #
+// [output] sampled points
+void sample_beizer(const std::vector<Vect3d> &cpoints, const int sampling_num, std::vector<Vect3d> &point);

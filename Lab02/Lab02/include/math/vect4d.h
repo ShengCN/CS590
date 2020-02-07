@@ -128,6 +128,12 @@ public:
 			v[3]/=rhs;	
 		}
 	}
+	
+	std::string to_string() {
+		std::ostringstream oss;
+		oss << v[0] << "," << v[1] << "," << v[2] << "," << v[3];
+		return oss.str();
+	}
 
 	//unary operators
 	Vect4d operator-(void) const {return Vect4d(-v[0],-v[1],-v[2],-v[3]);}
