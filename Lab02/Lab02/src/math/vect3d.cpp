@@ -161,6 +161,10 @@ Vect3d Vect3d::GetSaturated() const
 	return temp;
 }
 
+float Vect3d::operator[](int ind) {
+	return v[ind];
+}
+
 Vect3d operator*(float scaleFactor, const Vect3d & rhs)
 {
 	return rhs*scaleFactor;

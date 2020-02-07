@@ -20,11 +20,14 @@
 #include <string>
 #include <vector>			//Standard template library class
 #include <GL/freeglut.h>
-
+#include <cassert>
 
 //in house created libraries
-#include "math/vect3d.h"    //for vector manipulation
+#include "math/vect3d.h"   
+#include "math/vect4d.h"   
+#include "math/matrix4d.h"
 #include "trackball.h"
+#include "lab02.h"
 
 #pragma warning(disable : 4996)
 #pragma comment(lib, "freeglut.lib")
@@ -39,10 +42,15 @@ bool mouseLeft, mouseMid, mouseRight;
 GLuint points=0;  //number of points to display the object
 int steps=20;     //# of subdivisions
 bool needRedisplay=false;
-GLfloat  sign=+1; //diretcion of rotation
+GLfloat  sign=+1; //direction of rotation
 const GLfloat defaultIncrement=0.7f; //speed of rotation
 GLfloat  angleIncrement=defaultIncrement;
 
+/*********************************
+	Lab 2 related
+**********************************/
+int total_point_num = 12;
+vector <Vect3d> beizer_points;
 vector <Vect3d> v;   //all the points will be stored here
 
 //window size
@@ -52,7 +60,7 @@ GLint hWindow=800;
 //this defines what will be rendered
 //see Key() how is it controlled
 bool tangentsFlag = false;
-bool pointsFlag = false;
+bool pointsFlag = true;
 bool curveFlag = true;
 
 /*********************************
@@ -89,7 +97,7 @@ void Reshape(int w, int h)
 
 //Some simple rendering routines using old fixed-pipeline OpenGL
 //draws line from a to b with color 
-void DrawLine(Vect3d a, Vect3d b, Vect3d color) {
+void DrawLine(Vect3d a, Vect3d b, Vect3d color= Vect3d(0.0f,0.0f,0.0f)) {
 
 	glColor3fv(color);
 	glBegin(GL_LINES);
@@ -121,35 +129,27 @@ inline Vect3d P(GLfloat t)
 	return Vect3d(rad*(float)sin(rot*M_PI*t),height*t,rad*(float)cos(rot*M_PI*t)); //spiral with radius rad, height, and rotations rot
 }
 
-//This fills the <vector> *a with data. 
-void CreateCurve(vector <Vect3d> *a, int n)
-{
-	GLfloat step=1.f/n;
-	for (int i=0;i<n;i++)
-	{
-			a->push_back(P(i*step));
-	}
-}
 
-//Call THIS for a new curve. It clears the old one first
+// Call THIS for a new curve. It clears the old one first
 void InitArray(int n)
 {
 	v.clear();
-	CreateCurve(&v,n); 
-}
-
-//returns random number from <-1,1>
-inline float random11() { 
-	return 2.f*rand() / (float)RAND_MAX - 1.f;
-}
-
-//randomizes an existing curve by adding random number to each coordinate
-void Randomize(vector <Vect3d> *a) {
-	const float intensity = 0.01f;
-	for (unsigned int i = 0; i < a->size(); i++) {
-		Vect3d r(random11(), random11(), random11());
-		a->at(i) = a->at(i) + intensity*r;
+	const int total_constraint_point = 4;
+	beizer_points.resize(total_constraint_point);
+	
+	// initialize beizer points
+	srand(19950220);	// keep same beizer
+	for(int i = 0; i < total_constraint_point; ++i) {
+		//random_point(beizer_points[i]);
 	}
+
+	beizer_points[0] = Vect3d(0.0, 0.0, 0.0);
+	beizer_points[1] = Vect3d(1.0, 1.0, 0.0);
+	beizer_points[2] = Vect3d(2.0, 1.0, 0.0);
+	beizer_points[3] = Vect3d(3.0, 0.0, 0.0);
+
+
+	// CreateCurve(&v,n); 
 }
 
 //display coordinate system
@@ -170,34 +170,23 @@ void CoordSyst() {
 
 }
 
-//this is the actual code for the lab
-void Lab01() {
-	Vect3d a,b,c;
+void Lab02() {
+	Vect3d a, b, c;
 	Vect3d origin(0, 0, 0);
 	Vect3d red(1, 0, 0), green(0, 1, 0), blue(0, 0, 1), almostBlack(0.1f, 0.1f, 0.1f), yellow(1, 1, 0);
 
-
 	CoordSyst();
-	//draw the curve
-	if (curveFlag)
-		for (unsigned int i = 0; i < v.size() - 1; i++) {
-		DrawLine(v[i], v[i + 1], almostBlack);
-	}
-
 	//draw the points
 	if (pointsFlag)
-		for (unsigned int i = 0; i < v.size() - 1; i++) {
-		DrawPoint(v[i], blue);
-	}
+		for (unsigned int i = 0; i < v.size(); i++) {
+			DrawPoint(v[i], blue);
+		}
 
-//draw the tangents
-	if (tangentsFlag)
-	for (unsigned int i = 0; i < v.size() - 1; i++) {
-		Vect3d tan;
-		tan = v[i + 1] - v[i]; //too simple - could be better from the point after AND before
-		tan.Normalize(); 
-		tan *= 0.2;
-		DrawLine(v[i], v[i]+tan, red);
+	// visualize beizer curves
+	if (curveFlag) {
+		for (size_t i = 1; i < v.size(); ++i) {
+			DrawLine(v[i-1], v[i]);
+		}
 	}
 }
 
@@ -209,7 +198,7 @@ void RenderObjects()
 	glMatrixMode(GL_MODELVIEW);
 	trackball.Set3DViewCamera();
 	//call the student's code from here
-	Lab01();
+	Lab02();
 }
 
 //Add here if you want to control some global behavior
@@ -240,9 +229,13 @@ void Kbd(unsigned char a, int x, int y)//keyboard callback
 		break;
 	}
 	case 'r': {
-		Randomize(&v);
+		random_points(v, total_point_num);
 		break;
 	}
+	case 'b': {
+			random_points_beizer(beizer_points, 30, v);
+			break;
+		}
 	}
 	cout << "[points]=[" << steps << "]" << endl;
 	glutPostRedisplay();
@@ -254,26 +247,25 @@ OpenGL code. Do not touch.
 ******************/
 void Idle(void)
 {
-  glClearColor(0.5f,0.5f,0.5f,1); //background color
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-  GLMessage("Lab 2 - CS 590CGS");
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluPerspective(40,(GLfloat)wWindow/(GLfloat)hWindow,0.01,100); //set the camera
-  glMatrixMode(GL_MODELVIEW); //set the scene
-  glLoadIdentity();
-  gluLookAt(0,10,10,0,0,0,0,1,0); //set where the camera is looking at and from. 
-  static GLfloat angle=0;
-  angle+=angleIncrement;
-  if (angle>=360.f) angle=0.f;
-  glRotatef(sign*angle,0,1,0);
-  RenderObjects();
-  glutSwapBuffers();  
 }
 
 void Display(void)
 {
-
+	glClearColor(0.5f, 0.5f, 0.5f, 1); //background color
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	GLMessage("Lab 2 - CS 590CGS");
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(40, (GLfloat)wWindow / (GLfloat)hWindow, 0.01, 100); //set the camera
+	glMatrixMode(GL_MODELVIEW); //set the scene
+	glLoadIdentity();
+	gluLookAt(0, 10, 10, 0, 0, 0, 0, 1, 0); //set where the camera is looking at and from. 
+	static GLfloat angle = 0;
+	angle += angleIncrement;
+	if (angle >= 360.f) angle = 0.f;
+	glRotatef(sign*angle, 0, 1, 0);
+	RenderObjects();
+	glutSwapBuffers();
 }
 
 void Mouse(int button, int state, int x, int y) {

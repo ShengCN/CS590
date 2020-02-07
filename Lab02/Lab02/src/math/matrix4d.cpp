@@ -32,6 +32,13 @@ Matrix4d::Matrix4d(const float *rhs)
 	memcpy(m, rhs, 16*sizeof(float));
 }
 
+Matrix4d::Matrix4d(Vect4d c0, Vect4d c1, Vect4d c2, Vect4d c3) {
+	m[0] = c0[0];	m[1] = c1[0]; m[2] = c2[0]; m[3] = c3[0];
+	m[4] = c0[1];	m[5] = c1[1]; m[6] = c2[1]; m[7] = c3[1];
+	m[8] = c0[2];	m[9] = c1[2]; m[10] = c2[2]; m[11] = c3[2];
+	m[12] = c0[3];	m[13] = c1[3]; m[14] = c2[3]; m[15] = c3[3];
+}
+
 void Matrix4d::SetEntry(int pos,float val)
 {
 	if(pos>=0 && pos<=15) m[pos]=val;

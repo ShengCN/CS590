@@ -14,6 +14,8 @@ public:
              float  m4,float  m5,float  m6,float  m7,
 			 float  m8,float  m9,float m10,float m11,
 			 float m12,float m13,float m14,float m15);
+	Matrix4d(Vect4d c0, Vect4d c1, Vect4d c2, Vect4d c3);
+
 	Matrix4d(const float *rhs);
 	Matrix4d(const Matrix4d &rhs);
 	//destructor

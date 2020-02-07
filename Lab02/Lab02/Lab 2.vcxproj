@@ -19,8 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="lab02.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\math\matrix4d.cpp" />
     <ClCompile Include="src\math\vect3d.cpp" />
+    <ClCompile Include="src\math\vect4d.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="lab02.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{E161AD21-A6AD-4FE3-90AA-CF6551D0D9A1}</ProjectGuid>
@@ -82,7 +88,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include/;include/math/;$(ProjectDir)</AdditionalIncludeDirectories>
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>

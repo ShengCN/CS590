@@ -91,7 +91,9 @@ public:
 
 	//multiply by a float, eg 3*v
 	friend Vect4d operator*(float scaleFactor, const Vect4d & rhs);
-
+	float operator[](int ind) {
+		return v[ind];
+	}
 	bool operator==(const Vect4d & rhs) const;
 	bool operator!=(const Vect4d & rhs) const
 	{	return !((*this)==rhs);	}

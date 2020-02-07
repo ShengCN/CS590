@@ -99,6 +99,7 @@ public:
 
 	//multiply by a float, eg 3*v
 	friend Vect3d operator*(float scaleFactor, const Vect3d & rhs);
+	float operator[](int ind);
 
 	//Add, subtract etc, saving the construction of a temporary
 	void Add(const Vect3d & v2, Vect3d & result)
