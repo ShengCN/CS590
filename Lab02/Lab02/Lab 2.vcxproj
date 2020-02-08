@@ -91,7 +91,7 @@
       <AdditionalIncludeDirectories>include/;include/math/;$(ProjectDir);$(Eigen)</AdditionalIncludeDirectories>
       <TreatWarningAsError>false</TreatWarningAsError>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <FloatingPointModel>Strict</FloatingPointModel>
     </ClCompile>
     <Link>

@@ -82,8 +82,26 @@ struct hermite_curve {
 			return cur_dp.Dot(cur_dp) + (cur_p - p).Dot(cur_ddp);
 		};
 
-		t = 0.5f;
-		newton(f, df, t); // todo, check t should between [0.0, 1.0]
+		auto loss = [&](float t) {
+			Vect3d curve_p; this->p(t, curve_p);
+			return (curve_p - p).Length();
+		};
+
+		t = 0.5f; newton(f, df, t);
+		float best_loss = loss(t);
+
+		int max_iter = 10;
+		for(int i = 0; i < max_iter; ++i) {
+			float init_fract = (float)i / max_iter;
+			float cur_t = init_fract + 1e-2; newton(f, df, cur_t);
+			float cur_loss = loss(cur_t);
+			if(cur_loss < best_loss) {
+				best_loss = cur_loss;
+				t = cur_t;
+			}
+		}
+
+		t = std::clamp(t, 0.0f, 1.0f);
 		this->p(t, out_p);
 	}
 
@@ -96,7 +114,10 @@ struct hermite_curve {
 	}
 };
 
-void solve(const std::vector<Vect3d> &points, int n, std::vector<hermite_curve> &curves);
+void solve(const std::vector<Vect3d> &points, 
+		   int n, 
+		   std::vector<hermite_curve> &curves,
+		   bool verbose=true);
 
 // inputs are points and piece number
 // outputs are cubic curve points, closest points
