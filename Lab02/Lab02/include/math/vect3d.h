@@ -158,6 +158,8 @@ public:
 		}
 	}
 
+	float operator[](int ind)const { return v[ind]; }
+
 	std::string to_string() {
 		std::ostringstream oss;
 		oss << v[0] << "," << v[1] << "," << v[2];

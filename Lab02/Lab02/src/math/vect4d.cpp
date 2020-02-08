@@ -11,7 +11,7 @@
 //constructors
 Vect4d::Vect4d()
 {
-	memcpy(v,0,4*sizeof(float));
+	// memcpy(v,0,4*sizeof(float));
 }
 
 Vect4d::Vect4d(float x,float y,float z,float w)

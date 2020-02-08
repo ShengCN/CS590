@@ -29,6 +29,8 @@
 #include "trackball.h"
 #include "lab02.h"
 
+
+
 #pragma warning(disable : 4996)
 #pragma comment(lib, "freeglut.lib")
 
@@ -50,7 +52,7 @@ GLfloat  angleIncrement=defaultIncrement;
 	Lab 2 related
 **********************************/
 int total_point_num = 12;
-const int piece_num = 3;
+const int piece_num = 1;
 int piece_sample_num = 30;
 vector<vector <Vect3d>> pieces_beizer_points;
 vector <Vect3d> v;   //all the points will be stored here
@@ -167,7 +169,7 @@ void CoordSyst() {
 	a.Set(1, 0, 0);
 	b.Set(0, 1, 0);
 	c.Set(Vect3d::Cross(a, b)); //use cross product to find the last vector
-	glLineWidth(4);
+	glLineWidth(1);
 	DrawLine(origin, a, red);
 	DrawLine(origin, b, green);
 	DrawLine(origin, c, blue);
@@ -198,9 +200,12 @@ void Lab02() {
 		for (size_t i = 1; i < approximate_curve.size(); ++i) {
 			DrawLine(approximate_curve[i-1], approximate_curve[i]);
 		}
+		glPointSize(20.0f);
 		for(auto&p:visualize_points) {
 			DrawPoint(p, yellow);
 		}
+		glPointSize(1.0f);
+
 	}
 }
 
@@ -243,15 +248,16 @@ void Kbd(unsigned char a, int x, int y)//keyboard callback
 		break;
 	}
 	case 'r': {
-		// random_points(v, total_point_num);
-			v.resize(total_point_num);
+			random_points(v, 4);
+			/*v.resize(total_point_num);
 			for (int i = 0; i < total_point_num; ++i) {
 				v[i] = (i) * Vect3d(1.0f, 0.0f, 0.0f) * 0.3f;
-			}
+			}*/
 			break;
 	}
 	case 'b': {
 			v.clear();
+			init_beizer();
 			for(int i = 0;i < piece_num; ++i) {
 				std::vector<Vect3d> piece_samples;
 				sample_beizer(pieces_beizer_points[i], piece_sample_num, piece_samples);
@@ -262,7 +268,12 @@ void Kbd(unsigned char a, int x, int y)//keyboard callback
 	case 'a':
 		{
 			// compute the approximate curve
+			timer clc;
+			clc.tic();
 			compute_curve(v, 1, approximate_curve, visualize_points);
+			clc.toc();
+			clc.print_elapsed();
+
 			break;
 		}
 	}
@@ -341,7 +352,6 @@ void MouseMotion(int x, int y) {
 int main(int argc, char **argv)
 { 
 	srand(19950220);	// fake random numbers
-	
 	glutInitDisplayString("stencil>=2 rgb double depth samples");
 	glutInit(&argc, argv);
 	glutInitWindowSize(wWindow,hWindow);
@@ -360,7 +370,6 @@ int main(int argc, char **argv)
 	glutMouseFunc(Mouse);
 	glutMotionFunc(MouseMotion);
 	InitArray(steps);
-	init_beizer();
 	glutMainLoop();
 	return 0;        
 }
