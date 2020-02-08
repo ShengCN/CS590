@@ -248,7 +248,7 @@ void Kbd(unsigned char a, int x, int y)//keyboard callback
 		break;
 	}
 	case 'r': {
-			random_points(v, 4);
+			random_points(v, 6);
 			/*v.resize(total_point_num);
 			for (int i = 0; i < total_point_num; ++i) {
 				v[i] = (i) * Vect3d(1.0f, 0.0f, 0.0f) * 0.3f;

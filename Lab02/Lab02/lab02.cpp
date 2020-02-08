@@ -94,6 +94,7 @@ bool newton(std::function<float(float)> f, std::function<float(float)> f_prime, 
 void solve(const std::vector<Vect3d> &points, int n, std::vector<hermite_curve> &curves, bool verbose) {
 	using Eigen::MatrixXd;
 	using Eigen::VectorXd;
+	assert(points.size() >= 4);
 
 	// L2 distance loss
 	auto loss = [](const std::vector<Vect3d> &points, hermite_curve curve) {
@@ -106,22 +107,39 @@ void solve(const std::vector<Vect3d> &points, int n, std::vector<hermite_curve> 
 		return total_loss;
 	};
 	
+	timer clc;
 	const int max_iteration = (int)1e2;
 	const size_t sample_num = points.size();
 	// todo, extend to n
-	curves.resize(1);
+	curves.resize(n);
 
 	MatrixXd phi_km(4, sample_num), m(sample_num,4);
 	MatrixXd y(sample_num, 3);
 	
 	// initialize
 	// todo, find knots
+	// just evenly divide the points
+	for(int i =0 ; i < n; ++i) {
+		float fract = (float)i / (n);
+		int piece_size = sample_num / n; // if (piece_size < 0) piece_size = 1;
+
+		// todo, when input is ill, this will have bug
+		int cur_begin_ind = (int)(fract * piece_size), cur_end_ind = (int)(fract * piece_size + piece_size);
+		curves[i] = hermite_curve(points[cur_begin_ind], 
+								  points[cur_end_ind - 1], 
+								  points[cur_begin_ind+1]- points[cur_begin_ind], 
+								  points[cur_end_ind-1] - points[cur_end_ind-2]);
+	}
+
 	float min_loss = std::numeric_limits<float>::max();
-	hermite_curve best_curve = hermite_curve(points.front(), points.back(), points.front(), points.back());
 	for (int i = 0; i < max_iteration; ++i) {
 		for (size_t si = 0; si < sample_num; ++si) {
 			float t; Vect3d tmp;
+			
+			clc.tic();
 			best_curve.find_closet_point(points[si], t, tmp);
+			clc.toc(); std::cerr << "finding t spent: " << clc.to_string() << " " << t << std::endl;
+			
 			Vect4d phi; hermite_curve::get_phi(t, phi);
 			phi_km(0, si) = phi[0]; phi_km(1, si) = phi[1]; phi_km(2, si) = phi[2]; phi_km(3, si) = phi[3];
 			y(si, 0) = points[si][0]; y(si, 1) = points[si][1]; y(si, 2) = points[si][2];
