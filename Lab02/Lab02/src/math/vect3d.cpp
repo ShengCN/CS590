@@ -1,6 +1,7 @@
 #include <memory.h>
 #include <math.h>
 #include "math/vect3d.h"
+#include "math/vect4d.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -28,6 +29,10 @@ Vect3d::Vect3d(const Vect3d &newv)
 	memcpy(v,newv.v,sizeof(float)*3);
 }
 
+
+Vect3d::Vect3d(const Vect4d &newv) {
+	v[0] = newv[0]; v[1] = newv[1]; v[2] = newv[2];
+}
 
 //unary operators
 void Vect3d::Zero(void)

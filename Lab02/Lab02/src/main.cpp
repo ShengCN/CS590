@@ -54,6 +54,8 @@ const int piece_num = 3;
 int piece_sample_num = 30;
 vector<vector <Vect3d>> pieces_beizer_points;
 vector <Vect3d> v;   //all the points will be stored here
+vector <Vect3d> approximate_curve;
+vector <Vect3d> visualize_points;
 
 //window size
 GLint wWindow=1200;
@@ -181,20 +183,23 @@ void Lab02() {
 	CoordSyst();
 	//draw the points
 	if (pointsFlag) {
-		//for (unsigned int i = 0; i < v.size(); i++) {
-		//	DrawPoint(v[i], blue);
-		//}
-
-		for(auto &bp: pieces_beizer_points) {
-			for(auto &p:bp)
-				DrawPoint(p, red);
+		for (unsigned int i = 0; i < v.size(); i++) {
+			DrawPoint(v[i], blue);
 		}
+
+		//for(auto &bp: pieces_beizer_points) {
+		//	for(auto &p:bp)
+		//		DrawPoint(p, red);
+		//}
 	}
 
 	// visualize beizer curves
 	if (curveFlag) {
-		for (size_t i = 1; i < v.size(); ++i) {
-			DrawLine(v[i-1], v[i]);
+		for (size_t i = 1; i < approximate_curve.size(); ++i) {
+			DrawLine(approximate_curve[i-1], approximate_curve[i]);
+		}
+		for(auto&p:visualize_points) {
+			DrawPoint(p, yellow);
 		}
 	}
 }
@@ -238,8 +243,12 @@ void Kbd(unsigned char a, int x, int y)//keyboard callback
 		break;
 	}
 	case 'r': {
-		random_points(v, total_point_num);
-		break;
+		// random_points(v, total_point_num);
+			v.resize(total_point_num);
+			for (int i = 0; i < total_point_num; ++i) {
+				v[i] = (i) * Vect3d(1.0f, 0.0f, 0.0f) * 0.3f;
+			}
+			break;
 	}
 	case 'b': {
 			v.clear();
@@ -248,6 +257,12 @@ void Kbd(unsigned char a, int x, int y)//keyboard callback
 				sample_beizer(pieces_beizer_points[i], piece_sample_num, piece_samples);
 				v.insert(v.end(), piece_samples.begin(), piece_samples.end());
 			}
+			break;
+		}
+	case 'a':
+		{
+			// compute the approximate curve
+			compute_curve(v, 1, approximate_curve, visualize_points);
 			break;
 		}
 	}
@@ -326,7 +341,7 @@ void MouseMotion(int x, int y) {
 int main(int argc, char **argv)
 { 
 	srand(19950220);	// fake random numbers
-
+	
 	glutInitDisplayString("stencil>=2 rgb double depth samples");
 	glutInit(&argc, argv);
 	glutInitWindowSize(wWindow,hWindow);

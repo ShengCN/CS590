@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 
+class Vect4d;
 class Vect3d
 {
 public:
@@ -17,6 +18,8 @@ public:
 
 	Vect3d(const Vect3d &newv);
 
+	Vect3d(const Vect4d &newv);
+	
 	//destructor
 	~Vect3d() {}	//empty
 

@@ -50,3 +50,34 @@ void sample_beizer(const vector<Vect3d> &cpoints, const int sampling_num, vector
 		point[ti] = point_matrix * weight;
 	}
 }
+
+void compute_curve(const std::vector<Vect3d> &points, int n, std::vector<Vect3d> &out_curves, std::vector<Vect3d> &out_visualize_points) {
+	Vect3d p0 = points[0], p1 = points[3], p0_ = Vect3d(0.0,1.0,0.0), p1_ = Vect3d(0.0,1.0,0.0);
+	hermite_curve curve(p0, p1, p0_, p1_);
+	
+	const int sampling_n = 30;
+	out_curves.resize(sampling_n);
+	for(int i = 0; i < sampling_n; ++i) {
+		float t = (float)i / (sampling_n - 1);
+		curve.p(t, out_curves[i]);
+	}
+
+	// solve t for each point
+	for(auto &p:points) {
+
+	}
+}
+
+bool newton(std::function<float(float)> f, std::function<float(float)> f_prime, float &out_root) {
+	int max_iteration = 1e5;
+	float eps = 1e-3;
+	for(int i = 0; i < max_iteration; ++i) {
+		out_root = out_root - f(out_root) / f_prime(out_root);
+
+		if(std::abs(f(out_root)) < eps) {
+			return true;
+		}
+	}
+
+	return false;
+}

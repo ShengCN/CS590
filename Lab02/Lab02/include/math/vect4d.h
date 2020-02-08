@@ -138,6 +138,9 @@ public:
 	//unary operators
 	Vect4d operator-(void) const {return Vect4d(-v[0],-v[1],-v[2],-v[3]);}
 	Vect4d operator+(void) const {return (*this);}
+	float operator[](int i) const {
+		return v[i];
+	}
 
 	//cast to pointer to float for glVertex4fv etc
 	operator float* () const {return (float*) this;}
