@@ -4,7 +4,7 @@
 #include "vect3d.h"
 #include "vect4d.h"
 
-
+#include <string>
 class Matrix4d
 {
 public:
@@ -115,6 +115,8 @@ public:
 	
 	//member variables
 	float m[16];
+
+	std::string to_string();
 };
 
 #endif	//Matrix4d_H

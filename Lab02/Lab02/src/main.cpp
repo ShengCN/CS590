@@ -52,8 +52,8 @@ GLfloat  angleIncrement=defaultIncrement;
 	Lab 2 related
 **********************************/
 int total_point_num = 12;
-const int piece_num = 2;
-int piece_sample_num = 30;
+const int piece_num = 3;
+int piece_sample_num = 120;
 vector<vector <Vect3d>> pieces_beizer_points;
 vector <Vect3d> v;   //all the points will be stored here
 vector <Vect3d> approximate_curve;

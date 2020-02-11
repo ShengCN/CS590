@@ -3,6 +3,7 @@
 #include "vect3d.h"
 #include "vect4d.h"
 #include "matrix4d.h"
+#include <sstream>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -609,4 +610,14 @@ void Matrix4d::SetRotationPartEuler(const double angleX, const double angleY, co
 	m[8] = ( float )( crsp*cy+sr*sy );
 	m[9] = ( float )( crsp*sy-sr*cy );
 	m[10] = ( float )( cr*cp );
+}
+
+std::string Matrix4d::to_string() {
+	std::ostringstream oss;
+	oss << m[0] << "\t" << m[1] << "\t" << m[2] << "\t" << m[3] << std::endl <<
+		m[4] << "\t" << m[5] << "\t" << m[6] << "\t" << m[7] << std::endl <<
+		m[8] << "\t" << m[9] << "\t" << m[10] << "\t" << m[11] << std::endl <<
+		m[12] << "\t" << m[13] << "\t" << m[14] << "\t" << m[15];
+
+	return oss.str();
 }

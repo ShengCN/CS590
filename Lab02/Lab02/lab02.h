@@ -114,6 +114,10 @@ struct hermite_curve {
 				  t_cubic - 2.0f * t_square + t,
 				  t_cubic - t_square);
 	}
+
+	std::string to_string() {
+		return coefficients.to_string();
+	}
 };
 
 void solve(const std::vector<Vect3d> &points, 
