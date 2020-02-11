@@ -113,7 +113,8 @@ void solve(const std::vector<Vect3d> &points, int n, std::vector<hermite_curve> 
 	// todo, extend to n
 	curves.resize(n);
 
-	MatrixXd phi_km(4, sample_num), m(sample_num,4);
+
+	MatrixXd phi_km(2 * n  + 2, sample_num), m(sample_num, 2 * n + 2);
 	MatrixXd y(sample_num, 3);
 	
 	// initialize
@@ -133,21 +134,38 @@ void solve(const std::vector<Vect3d> &points, int n, std::vector<hermite_curve> 
 
 	float min_loss = std::numeric_limits<float>::max();
 	for (int i = 0; i < max_iteration; ++i) {
-		for (size_t si = 0; si < sample_num; ++si) {
-			float t; Vect3d tmp;
-			
-			clc.tic();
-			best_curve.find_closet_point(points[si], t, tmp);
-			clc.toc(); std::cerr << "finding t spent: " << clc.to_string() << " " << t << std::endl;
-			
-			Vect4d phi; hermite_curve::get_phi(t, phi);
-			phi_km(0, si) = phi[0]; phi_km(1, si) = phi[1]; phi_km(2, si) = phi[2]; phi_km(3, si) = phi[3];
-			y(si, 0) = points[si][0]; y(si, 1) = points[si][1]; y(si, 2) = points[si][2];
+		for (int curve_i = 0; curve_i < n; ++curve_i) {
+			for (size_t si = 0; si < sample_num; ++si) {
+				float t; Vect3d tmp;
+
+				clc.tic();
+				curves[curve_i].find_closet_point(points[si], t, tmp);
+				clc.toc(); std::cerr << "finding t spent: " << clc.to_string() << " " << t << std::endl;
+
+				Vect4d phi; hermite_curve::get_phi(t, phi);
+				int curve_row_offset = 2 * curve_i;
+				if(curve_i == 0) {
+					phi_km(curve_row_offset + 0, si) = phi[0]; phi_km(curve_row_offset + 1, si) = phi[1]; phi_km(curve_row_offset + 2, si) = phi[2]; phi_km(curve_row_offset + 3, si) = phi[3];
+				} else {
+					phi_km(curve_row_offset + 2, si) = phi[1]; phi_km(curve_row_offset + 3, si) = phi[3]; 
+				}
+				y(si,0) = points[si][0]; y(si, 1) = points[si][1]; y(si,2) = points[si][2];
+			}	
 		}
+
 		m = phi_km.transpose();
 		MatrixXd ma = (phi_km * m).inverse() * phi_km * y; // 4x3
 		Vect3d p0(ma(0, 0), ma(0, 1), ma(0, 2)), p1(ma(1, 0), ma(1, 1), ma(1, 2)), p2(ma(2, 0), ma(2, 1), ma(2, 2)), p3(ma(3, 0), ma(3, 1), ma(3, 2));
-		hermite_curve new_curve(p0, p1, p2, p3);
+		std::vector<hermite_curve> new_curves = curves;
+		curves[0] = hermite_curve(p0, p1, p2, p3);
+		for(int i = 1; i < new_curves.size(); ++i) {
+			Vect3d p0(ma(2 * i - 1, 0), ma(2 * i - 1, 1), ma(2 * i - 1, 2)), 
+				p1(ma(2 * i +2, 0), ma(2 * i + 2, 1), ma(2 * i + 2, 2)),
+				p2(ma(2 * i + 1, 0), ma(2 * i + 1, 1), ma(2 * i + 1, 2)),
+				p3(ma(2 * i + 3, 0), ma(2 * i + 3, 1), ma(2 * i + 3, 2));
+
+			new_curves[i] = hermite_curve(p0, p1, p2, p3);
+		}
 
 		float cur_loss = loss(points, curves[0]);
 		if(verbose)
@@ -161,9 +179,7 @@ void solve(const std::vector<Vect3d> &points, int n, std::vector<hermite_curve> 
 
 		// update
 		if(min_loss > cur_loss) {
-			min_loss = cur_loss; best_curve = new_curve;
+			min_loss = cur_loss; curves = new_curves;
 		}
 	}
-
-	curves[0] = best_curve;
 }

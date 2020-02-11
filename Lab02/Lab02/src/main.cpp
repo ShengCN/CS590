@@ -52,7 +52,7 @@ GLfloat  angleIncrement=defaultIncrement;
 	Lab 2 related
 **********************************/
 int total_point_num = 12;
-const int piece_num = 1;
+const int piece_num = 2;
 int piece_sample_num = 30;
 vector<vector <Vect3d>> pieces_beizer_points;
 vector <Vect3d> v;   //all the points will be stored here
@@ -270,7 +270,7 @@ void Kbd(unsigned char a, int x, int y)//keyboard callback
 			// compute the approximate curve
 			timer clc;
 			clc.tic();
-			compute_curve(v, 1, approximate_curve, visualize_points);
+			compute_curve(v, piece_num, approximate_curve, visualize_points);
 			clc.toc();
 			clc.print_elapsed();
 
