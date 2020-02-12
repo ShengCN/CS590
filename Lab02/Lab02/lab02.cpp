@@ -2,7 +2,7 @@
 #include <cassert>
 #include <iostream>
 #include <set>
-#include <Eigen/Dense>
+#include "Eigen/Dense"
 using std::vector;
 
 void random_points(vector<Vect3d> &a, int n) {
