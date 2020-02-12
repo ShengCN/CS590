@@ -51,9 +51,8 @@ GLfloat  angleIncrement=defaultIncrement;
 /*********************************
 	Lab 2 related
 **********************************/
-int total_point_num = 12;
-const int piece_num = 3;
-int piece_sample_num = 120;
+int total_point_num = 12, approx_piece_num = 1;
+const int beizer_piece_num = 3;
 vector<vector <Vect3d>> pieces_beizer_points;
 vector <Vect3d> v;   //all the points will be stored here
 vector <Vect3d> approximate_curve;
@@ -136,8 +135,8 @@ inline Vect3d P(GLfloat t)
 }
 
 void init_beizer() {
-	pieces_beizer_points.resize(piece_num);
-	for(int i = 0; i < piece_num; ++i) {
+	pieces_beizer_points.resize(beizer_piece_num);
+	for(int i = 0; i < beizer_piece_num; ++i) {
 		random_control_points(pieces_beizer_points[i]);
 		
 		// keep C-1
@@ -237,30 +236,32 @@ void Kbd(unsigned char a, int x, int y)//keyboard callback
 	}
 	case 's': {sign = -sign; break; }
 	case '-': {
-		steps--;
-		if (steps<1) steps = 1;
-		InitArray(steps);
+			total_point_num--;
 		break;
 	}
 	case '+': {
-		steps++;
-		InitArray(steps);
+			total_point_num++;
 		break;
 	}
-	case 'r': {
-			random_points(v, 6);
-			/*v.resize(total_point_num);
-			for (int i = 0; i < total_point_num; ++i) {
-				v[i] = (i) * Vect3d(1.0f, 0.0f, 0.0f) * 0.3f;
-			}*/
+	case '<':{
+			approx_piece_num = std::max(approx_piece_num - 1, 0);
 			break;
-	}
+		}
+	case '>':{
+			approx_piece_num++;
+			break;
+		}
+	case 'r':
+		{
+			random_points(v, total_point_num);
+			break;
+		}
 	case 'b': {
 			v.clear();
 			init_beizer();
-			for(int i = 0;i < piece_num; ++i) {
+			for(int i = 0;i < beizer_piece_num; ++i) {
 				std::vector<Vect3d> piece_samples;
-				sample_beizer(pieces_beizer_points[i], piece_sample_num, piece_samples);
+				sample_beizer(pieces_beizer_points[i], total_point_num, piece_samples);
 				v.insert(v.end(), piece_samples.begin(), piece_samples.end());
 			}
 			break;
@@ -270,14 +271,18 @@ void Kbd(unsigned char a, int x, int y)//keyboard callback
 			// compute the approximate curve
 			timer clc;
 			clc.tic();
-			compute_curve(v, piece_num, approximate_curve, visualize_points);
+			compute_curve(v, approx_piece_num, approximate_curve, visualize_points);
 			clc.toc();
 			clc.print_elapsed();
 
 			break;
 		}
 	}
-	cout << "[points]=[" << steps << "]" << endl;
+	cout << "[points]=[" << total_point_num << "]" << endl;
+	cout << "[# of fitting curve piece]=[" << approx_piece_num << "]" << endl;
+
+	cout << "press [a] to compute the approximated curve" << endl;
+
 	glutPostRedisplay();
 }
 

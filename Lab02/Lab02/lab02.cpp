@@ -58,7 +58,7 @@ void compute_curve(const std::vector<Vect3d> &points, int n, std::vector<Vect3d>
 	solve(points, n, pw_curves);
 
 	// output result hermite curves
-	const int sampling_n = 30;
+	const int sampling_n = 30 * n;
 	out_curves.resize(sampling_n);
 	int piece_sample_n = sampling_n / (int)pw_curves.size();
 	for(int i = 0; i < sampling_n; ++i) {
@@ -72,7 +72,7 @@ void compute_curve(const std::vector<Vect3d> &points, int n, std::vector<Vect3d>
 	piece_sample_n = points.size()/ (int)pw_curves.size();
 	for (size_t pi = 0; pi < points.size(); ++pi) {
 		int piece_ind = pi / piece_sample_n;
-		float t; pw_curves[piece_ind].find_closet_point(points[pi], t, out_visualize_points[pi]);
+		float t; pw_curves[std::min((size_t)piece_ind, pw_curves.size()-1)].find_closet_point(points[pi], t, out_visualize_points[pi]);
 	}
 
 	for(auto &c:pw_curves) {
@@ -108,7 +108,7 @@ void solve(const std::vector<Vect3d> &points, int n, std::vector<hermite_curve> 
 
 		const int piece_size = points.size() / curves.size();
 		for(size_t pi =0; pi < points.size(); ++pi) {
-			size_t piece_ind = pi / piece_size;
+			size_t piece_ind = std::min(pi / piece_size, curves.size()-1);
 			float t; Vect3d pp; curves[piece_ind].find_closet_point(points[pi], t, pp);
 			total_loss += (pp - points[pi]).Length();
 		}
@@ -117,7 +117,7 @@ void solve(const std::vector<Vect3d> &points, int n, std::vector<hermite_curve> 
 	};
 	
 	timer clc;
-	const int max_iteration = (int)1e2;
+	const int max_iteration = (int)1e3;
 	const size_t sample_num = points.size();
 	// todo, extend to n
 	curves.resize(n);
@@ -129,20 +129,20 @@ void solve(const std::vector<Vect3d> &points, int n, std::vector<hermite_curve> 
 	// initialize
 	// todo, find knots
 	// just evenly divide the points
-	int piece_size = sample_num / n; // if (piece_size < 0) piece_size = 1;
+	int piece_size = std::max(sample_num / n, (unsigned int)1); // if (piece_size < 0) piece_size = 1;
 	for (int i = 0; i < n; ++i) {
 		int cur_begin_ind = piece_size * i, cur_end_ind = piece_size * (i + 1);
 		if(i==0) {
 			curves[i] = hermite_curve(points[cur_begin_ind],
 									  points[cur_end_ind - 1],
 									  points[cur_begin_ind + 1] - points[cur_begin_ind],
-									  points[cur_end_ind - 1] - points[cur_end_ind - 2]);
+									  points[cur_end_ind - 1] - points[std::max(cur_end_ind - 2, 0)]);
 		} else {
 			int last_end_ind = piece_size * i;
 			curves[i] = hermite_curve(points[last_end_ind-1],
 									  points[cur_end_ind - 1],
-									  points[last_end_ind - 1] - points[last_end_ind-2],
-									  points[cur_end_ind - 1] - points[cur_end_ind - 2]);
+									  points[last_end_ind - 1] - points[std::max(cur_end_ind - 2, 0)],
+									  points[cur_end_ind - 1] - points[std::max(cur_end_ind - 2, 0)]);
 		}
 	}
 	float min_loss = std::numeric_limits<float>::max();
@@ -166,7 +166,7 @@ void solve(const std::vector<Vect3d> &points, int n, std::vector<hermite_curve> 
 		for (size_t si = 0; si < sample_num; ++si) {
 			float t; Vect3d tmp;
 
-			const size_t curve_ind = si / piece_size;
+			const size_t curve_ind = std::clamp(si / piece_size, (size_t)0, curves.size() - 1);
 			clc.tic();
 			tmp_curve[curve_ind].find_closet_point(points[si], t, tmp);
 			clc.toc(); // std::cerr << "finding t spent: " << clc.to_string() << " " << t << std::endl;
@@ -243,7 +243,7 @@ void solve(const std::vector<Vect3d> &points, int n, std::vector<hermite_curve> 
 			std::cerr << "loss: " << cur_loss << std::endl;
 
 		// converge
-		if (cur_loss < 1e-3 || std::abs(min_loss - cur_loss) < 1e-3 || isnan(cur_loss)) {
+		if (cur_loss < 1e-3 || std::abs(min_loss - cur_loss) < 1e-6) {
 			std::cerr << "Converge \n";
 			break;
 		}
