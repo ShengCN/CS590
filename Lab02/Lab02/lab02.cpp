@@ -223,17 +223,17 @@ void solve(const std::vector<Vect3d> &points, int n, std::vector<hermite_curve> 
 
 		m = phi_km.transpose();
 		MatrixXd ma = (phi_km * m).inverse() * phi_km * y; // 4x3
-		Vect3d p0(ma(0, 0), ma(0, 1), ma(0, 2)), 
-			   p1(ma(1, 0), ma(1, 1), ma(1, 2)), 
-			   p2(ma(2, 0), ma(2, 1), ma(2, 2)), 
-			   p3(ma(3, 0), ma(3, 1), ma(3, 2));
+		Vect3d p0((float)ma(0, 0),(float)ma(0, 1),(float)ma(0, 2)), 
+			   p1((float)ma(1, 0),(float)ma(1, 1),(float)ma(1, 2)),
+			   p2((float)ma(2, 0),(float)ma(2, 1),(float)ma(2, 2)),
+			   p3((float)ma(3, 0),(float)ma(3, 1),(float)ma(3, 2));
 		std::vector<hermite_curve> new_curves = tmp_curve;
 		new_curves[0] = hermite_curve(p0, p1, p2, p3);
-		for(int i = 1; i < new_curves.size(); ++i) {
-			Vect3d p0(ma(2 * i - 1, 0), ma(2 * i - 1, 1), ma(2 * i - 1, 2)), 
-				   p1(ma(2 * i + 1, 0), ma(2 * i + 1, 1), ma(2 * i + 1, 2)),
-				   p2(ma(2 * i + 2, 0), ma(2 * i + 2, 1), ma(2 * i + 2, 2)),
-				   p3(ma(2 * i + 3, 0), ma(2 * i + 3, 1), ma(2 * i + 3, 2));
+		for(size_t i = 1; i < new_curves.size(); ++i) {
+			Vect3d	p0((float)ma(2 * i - 1, 0), (float)ma(2 * i - 1, 1), (float)ma(2 * i - 1, 2)),
+				p1((float)ma(2 * i + 1, 0), (float)ma(2 * i + 1, 1), (float)ma(2 * i + 1, 2)),
+				p2((float)ma(2 * i + 2, 0), (float)ma(2 * i + 2, 1), (float)ma(2 * i + 2, 2)),
+				p3((float)ma(2 * i + 3, 0), (float)ma(2 * i + 3, 1), (float)ma(2 * i + 3, 2));
 
 			new_curves[i] = hermite_curve(p0, p2, p1, p3);
 		}

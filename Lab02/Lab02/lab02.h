@@ -93,7 +93,7 @@ struct hermite_curve {
 		int max_iter = 10;
 		for(int i = 0; i < max_iter; ++i) {
 			float init_fract = (float)i / max_iter;
-			float cur_t = init_fract + 1e-2; newton(f, df, cur_t);
+			float cur_t = init_fract + 1e-2f; newton(f, df, cur_t);
 			float cur_loss = loss(cur_t);
 			if(cur_loss < best_loss) {
 				best_loss = cur_loss;
