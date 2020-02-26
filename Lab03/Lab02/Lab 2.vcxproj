@@ -21,11 +21,10 @@
   <ItemGroup>
     <ClCompile Include="lab03.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\math\matrix4d.cpp" />
     <ClCompile Include="src\math\vect3d.cpp" />
-    <ClCompile Include="src\math\vect4d.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\trackball.h" />
     <ClInclude Include="lab03.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

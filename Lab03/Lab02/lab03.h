@@ -3,11 +3,11 @@
 #include <vector>
 #include <functional>
 #include <chrono>
-#include <iostream>
 
-#include "vect3d.h"
-#include "vect4d.h"
-#include "matrix4d.h"
+#include <sstream>
+#include <iostream>
+#include <glm/glm.hpp>
+using glm::vec3;
 
 typedef std::chrono::high_resolution_clock Clock;
 class timer {
@@ -57,24 +57,36 @@ struct tree_node {
 	std::vector<std::shared_ptr<tree_node>> children_list; // in this experiment, size will only be in range [0,3]
 	std::shared_ptr<tree_node> parent_node;
 	float width, height, thickness;
-	float local_rotation;
+	vec3 global_rotation_axis;
+	float global_rotation_deg;
+	std::vector<vec3> node_four_points;
+
+	static int id;
+	int cur_id;
 
 	// functions
-	tree_node(std::shared_ptr<tree_node> parent, float w, float h, float t, float r):
-		parent_node(parent) , width(w), height(h), thickness(t), local_rotation(r) {}
+	tree_node(std::shared_ptr<tree_node> parent, float w, float h, float t, vec3 axis,float r):
+		parent_node(parent) , width(w), height(h), thickness(t), 
+		global_rotation_axis(axis), global_rotation_deg(r) {
+		id++; cur_id = id;
+	}
 
-	void get_box(Vect3d &a, Vect3d &b, Vect3d &c, Vect3d &d,
-				 Vect3d &e, Vect3d &f, Vect3d &g, Vect3d &h);
+	void add_child(std::shared_ptr<tree_node> &child_ptr) {
+		children_list.push_back(child_ptr);
+	}
+
+	void compute_box(vec3 &a, vec3 &b, vec3 &c, vec3 &d,
+				 vec3 &e, vec3 &f, vec3 &g, vec3 &h);
 };
 
 struct aabb {
-	Vect3d p0, p1;
+	vec3 p0, p1;
 
-	aabb(Vect3d p) {
+	aabb(vec3 p) {
 		p0 = p1 = p;
 	}
 
-	void add(Vect3d p) {
+	void add(vec3 p) {
 		p0[0] = std::min(p0[0], p[0]);
 		p0[1] = std::min(p0[1], p[1]);
 		p0[2] = std::min(p0[2], p[2]);
@@ -84,14 +96,14 @@ struct aabb {
 		p1[2] = std::max(p1[2], p[2]);
 	}
 
-	Vect3d diagonal() {
+	vec3 diagonal() {
 		return p1 - p0;
 	}
 };
 
 /* polygonal mesh */
 struct polygon_mesh { 
-	std::vector<Vect3d> verts;
+	std::vector<vec3> verts;
 
 	void normalize(float scale_fact=1.0f) {
 		if (verts.empty())
@@ -102,7 +114,7 @@ struct polygon_mesh {
 			poly_aabb.add(v);
 		}
 
-		float diag_length = poly_aabb.diagonal().Length();
+		float diag_length = glm::length(poly_aabb.diagonal());
 		float scale = scale_fact * 1.0f / diag_length;
 		for(auto &v:verts) {
 			v = v * scale;

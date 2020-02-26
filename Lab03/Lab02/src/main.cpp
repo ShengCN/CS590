@@ -22,10 +22,10 @@
 #include <GL/freeglut.h>
 #include <cassert>
 
+#include <glm/glm.hpp>
+#include <glm/vec3.hpp>
+
 //in house created libraries
-#include "math/vect3d.h"   
-#include "math/vect4d.h"   
-#include "math/matrix4d.h"
 #include "trackball.h"
 #include "lab03.h"
 
@@ -33,6 +33,7 @@
 #pragma comment(lib, "freeglut.lib")
 
 using namespace std;
+using glm::vec3;
 
 //some trackball variables -> used in mouse feedback
 TrackBallC trackball;
@@ -50,9 +51,9 @@ GLfloat  angleIncrement=defaultIncrement;
 	Lab 3 related
 **********************************/
 int subdivision_num = 10;
-vector <Vect3d> v;  
-vector <Vect3d> tree_box;
-vector <Vect3d> visualize_points;
+vector <vec3> v;  
+vector <vec3> tree_box;
+vector <vec3> visualize_points;
 
 //window size
 GLint wWindow=1200;
@@ -98,22 +99,22 @@ void Reshape(int w, int h)
 
 //Some simple rendering routines using old fixed-pipeline OpenGL
 //draws line from a to b with color 
-void DrawLine(Vect3d a, Vect3d b, Vect3d color= Vect3d(0.0f,0.0f,0.0f)) {
+void DrawLine(vec3 a, vec3 b, vec3 color= vec3(0.0f,0.0f,0.0f)) {
 
-	glColor3fv(color);
+	glColor3fv(&color[0]);
 	glBegin(GL_LINES);
-		glVertex3fv(a);
-		glVertex3fv(b);
+		glVertex3fv(&a[0]);
+		glVertex3fv(&b[0]);
 	glEnd();
 }
 
 //draws point at a with color 
-void DrawPoint(Vect3d a, Vect3d color) {
+void DrawPoint(vec3 a, vec3 color) {
 
-	glColor3fv(color);
+	glColor3fv(&color[0]);
 	glPointSize(5);
 	glBegin(GL_POINTS);
-	 glVertex3fv(a);
+	glVertex3fv(&a[0]);
 	glEnd();
 }
 
@@ -131,7 +132,24 @@ std::shared_ptr<tree_node> tree_head;
 polygon_mesh result_mesh;
 void init_base_tree() {
 	// linked list to construct the trees
-	tree_head = std::make_shared<tree_node>(nullptr, 3.0,3.0,3.0,0.0f);
+	tree_head = std::make_shared<tree_node>(nullptr, 3.0,3.0,3.0, vec3(0.0f), 0.0f);
+	
+	//   e  f
+	//   | /
+	// c d
+	// |/
+	// b
+	// |
+	// a
+	// |
+	// head
+
+	std::shared_ptr<tree_node> a = std::make_shared<tree_node>(tree_head, 2.0, 2.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); tree_head->add_child(a);
+	std::shared_ptr<tree_node> b = std::make_shared<tree_node>(a, 2.0, 2.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); a->add_child(b);
+	std::shared_ptr<tree_node> c = std::make_shared<tree_node>(b, 2.0, 2.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); b->add_child(c);
+	std::shared_ptr<tree_node> d = std::make_shared<tree_node>(b, 2.0, 2.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); b->add_child(d);
+	std::shared_ptr<tree_node> e = std::make_shared<tree_node>(d, 2.0, 2.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); d->add_child(e);
+	std::shared_ptr<tree_node> f = std::make_shared<tree_node>(d, 2.0, 2.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); d->add_child(f);
 
 	tree2mesh(tree_head, 1, result_mesh);
 	result_mesh.normalize();
@@ -145,14 +163,14 @@ void draw_polygon_mesh(polygon_mesh &mesh) {
 
 //display coordinate system
 void CoordSyst() {
-	Vect3d a, b, c;
-	Vect3d origin(0, 0, 0);
-	Vect3d red(1, 0, 0), green(0, 1, 0), blue(0, 0, 1), almostBlack(0.1f, 0.1f, 0.1f), yellow(1, 1, 0);
+	vec3 a, b, c;
+	vec3 origin(0, 0, 0);
+	vec3 red(1, 0, 0), green(0, 1, 0), blue(0, 0, 1), almostBlack(0.1f, 0.1f, 0.1f), yellow(1, 1, 0);
 
 	//draw the coordinate system 
-	a.Set(1, 0, 0);
-	b.Set(0, 1, 0);
-	c.Set(Vect3d::Cross(a, b)); //use cross product to find the last vector
+	a = vec3(1, 0, 0);
+	b = vec3(0, 1, 0);
+	c = glm::cross(a, b); //use cross product to find the last vector
 	glLineWidth(1);
 	DrawLine(origin, a, red);
 	DrawLine(origin, b, green);
@@ -162,9 +180,9 @@ void CoordSyst() {
 }
 
 void Lab03() {
-	Vect3d a, b, c;
-	Vect3d origin(0, 0, 0);
-	Vect3d red(1, 0, 0), green(0, 1, 0), blue(0, 0, 1), almostBlack(0.1f, 0.1f, 0.1f), yellow(1, 1, 0);
+	vec3 a, b, c;
+	vec3 origin(0, 0, 0);
+	vec3 red(1, 0, 0), green(0, 1, 0), blue(0, 0, 1), almostBlack(0.1f, 0.1f, 0.1f), yellow(1, 1, 0);
 
 	CoordSyst();
 	//draw the points
