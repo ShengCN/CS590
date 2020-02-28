@@ -145,11 +145,11 @@ void init_base_tree() {
 	// head
 
 	std::shared_ptr<tree_node> a = std::make_shared<tree_node>(tree_head, 2.0, 2.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); tree_head->add_child(a);
-	std::shared_ptr<tree_node> b = std::make_shared<tree_node>(a, 2.0, 2.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); a->add_child(b);
-	std::shared_ptr<tree_node> c = std::make_shared<tree_node>(b, 2.0, 2.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); b->add_child(c);
-	std::shared_ptr<tree_node> d = std::make_shared<tree_node>(b, 2.0, 2.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); b->add_child(d);
-	std::shared_ptr<tree_node> e = std::make_shared<tree_node>(d, 2.0, 2.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); d->add_child(e);
-	std::shared_ptr<tree_node> f = std::make_shared<tree_node>(d, 2.0, 2.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); d->add_child(f);
+	std::shared_ptr<tree_node> b = std::make_shared<tree_node>(a, 2.0, 4.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); a->add_child(b);
+	std::shared_ptr<tree_node> c = std::make_shared<tree_node>(b, 1.0, 4.0, 1.0, vec3(1.0f, 0.0f, 0.0f), 30.0f); b->add_child(c);
+	std::shared_ptr<tree_node> d = std::make_shared<tree_node>(b, 1.0, 6.0, 1.0, vec3(1.0f, 0.0f, 0.0f), -30.0f); b->add_child(d);
+	std::shared_ptr<tree_node> e = std::make_shared<tree_node>(d, 0.5, 3.0, 0.5, vec3(0.0f, 0.0f, 1.0f), 45.0f); d->add_child(e);
+	std::shared_ptr<tree_node> f = std::make_shared<tree_node>(d, 0.5, 3.0, 0.5, vec3(0.0f, 0.0f, 1.0f), -45.0f); d->add_child(f);
 
 	tree2mesh(tree_head, 1, result_mesh);
 	result_mesh.normalize();
@@ -180,7 +180,6 @@ void CoordSyst() {
 }
 
 void Lab03() {
-	vec3 a, b, c;
 	vec3 origin(0, 0, 0);
 	vec3 red(1, 0, 0), green(0, 1, 0), blue(0, 0, 1), almostBlack(0.1f, 0.1f, 0.1f), yellow(1, 1, 0);
 
