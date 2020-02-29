@@ -2,82 +2,11 @@
 #include <random>
 #include <vector>
 #include <functional>
-#include <chrono>
 
 #include <sstream>
 #include <iostream>
 #include <glm/glm.hpp>
 using glm::vec3;
-
-typedef std::chrono::high_resolution_clock Clock;
-class timer {
-public:
-	timer() = default;
-	~timer() {};
-
-	void tic() {
-		_is_ticed = true;
-		_tic = Clock::now();
-	}
-	void toc() {
-		_toc = Clock::now();
-	}
-
-	long long get_elapse() {
-		return std::chrono::duration_cast<std::chrono::nanoseconds>(_toc - _tic).count();
-	}
-
-	void print_elapsed() {
-		if (!_is_ticed) {
-			std::cerr << "timer has not been ticed \n";
-			return;
-		}
-
-		auto elapsed = get_elapse();
-		std::cerr << "Time: " << elapsed * 1e-9 << " seconds \n";
-	}
-
-	std::string to_string() {
-		if (!_is_ticed) {
-			std::cerr << "timer has not been ticed. \n";
-		}
-		std::stringstream oss;
-		oss << get_elapse() * 1e-9;
-		return oss.str();
-	}
-
-private:
-	bool _is_ticed = false;
-	std::chrono::time_point<std::chrono::steady_clock> _tic;
-	std::chrono::time_point<std::chrono::steady_clock> _toc;
-};
-
-/* Data structure to define a tree node */
-struct tree_node {
-	std::vector<std::shared_ptr<tree_node>> children_list; // in this experiment, size will only be in range [0,3]
-	std::shared_ptr<tree_node> parent_node;
-	float width, height, thickness;
-	vec3 global_rotation_axis;
-	float global_rotation_deg;
-	std::vector<vec3> node_four_points;
-
-	static int id;
-	int cur_id;
-
-	// functions
-	tree_node(std::shared_ptr<tree_node> parent, float w, float h, float t, vec3 axis,float r):
-		parent_node(parent) , width(w), height(h), thickness(t), 
-		global_rotation_axis(axis), global_rotation_deg(r) {
-		id++; cur_id = id;
-	}
-
-	void add_child(std::shared_ptr<tree_node> &child_ptr) {
-		children_list.push_back(child_ptr);
-	}
-
-	void compute_box(vec3 &a, vec3 &b, vec3 &c, vec3 &d,
-				 vec3 &e, vec3 &f, vec3 &g, vec3 &h);
-};
 
 struct aabb {
 	vec3 p0, p1;
@@ -101,25 +30,85 @@ struct aabb {
 	}
 };
 
+struct edge;
+struct face;
+
+struct point {
+	vec3 pos;
+	std::vector<std::shared_ptr<edge>> edges;
+
+	point(vec3 p) :pos(p) {}
+};
+
+struct edge {
+	std::shared_ptr<point> p1, p2;
+	std::vector<std::shared_ptr<face>> faces;
+
+	edge(std::shared_ptr<point> p1,
+		 std::shared_ptr<point> p2) :p1(p1), p2(p2) {
+	}
+};
+
+// assume quadrilateral 
+struct face {
+	std::shared_ptr<edge> e1, e2, e3, e4;
+	face(std::shared_ptr<edge> e1,
+		 std::shared_ptr<edge> e2,
+		 std::shared_ptr<edge> e3,
+		 std::shared_ptr<edge> e4) :
+		e1(e1), e2(e2), e3(e3), e4(e4) {
+	}
+};
+
+void add_edge(std::shared_ptr<point> p1,
+			  std::shared_ptr<point> p2,
+			  std::shared_ptr<edge> &e);
+
+void add_face(std::shared_ptr<edge> e1,
+			  std::shared_ptr<edge> e2,
+			  std::shared_ptr<edge> e3,
+			  std::shared_ptr<edge> e4,
+			  std::shared_ptr<face> &f);
+
+
+/* Data structure to define a tree node */
+struct tree_node {
+	std::vector<std::shared_ptr<tree_node>> children_list; // in this experiment, size will only be in range [0,3]
+	std::shared_ptr<tree_node> parent_node;
+	float width, height, thickness;
+	vec3 global_rotation_axis;
+	float global_rotation_deg;
+	std::vector<std::shared_ptr<point>> node_four_points;
+
+	static int id;
+	int cur_id;
+
+	// functions
+	tree_node(std::shared_ptr<tree_node> parent, float w, float h, float t, vec3 axis,float r):
+		parent_node(parent) , width(w), height(h), thickness(t), 
+		global_rotation_axis(axis), global_rotation_deg(r) {
+		id++; cur_id = id;
+	}
+
+	void add_child(std::shared_ptr<tree_node> &child_ptr) {
+		children_list.push_back(child_ptr);
+	}
+
+	void compute_box_point(std::shared_ptr<point> &a, 
+					 std::shared_ptr<point> &b, 
+					 std::shared_ptr<point> &c, 
+					 std::shared_ptr<point> &d,
+					 std::shared_ptr<point> &e, 
+					 std::shared_ptr<point> &f, 
+					 std::shared_ptr<point> &g, 
+					 std::shared_ptr<point> &h);
+};
+
 /* polygonal mesh */
 struct polygon_mesh { 
-	std::vector<vec3> verts;
+	std::vector<std::shared_ptr<face>> faces;
 
-	void normalize(float scale_fact=1.0f) {
-		if (verts.empty())
-			return;
-
-		aabb poly_aabb(verts[0]);
-		for(auto &v:verts) {
-			poly_aabb.add(v);
-		}
-
-		float diag_length = glm::length(poly_aabb.diagonal());
-		float scale = scale_fact * 1.0f / diag_length;
-		for(auto &v:verts) {
-			v = v * scale;
-		}
-	}
+	void normalize(float scale_fact, glm::vec3 &scale);
 };
 
 void tree2mesh(std::shared_ptr<tree_node> head, int subdivision_num, polygon_mesh &out_mesh);

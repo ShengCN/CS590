@@ -24,6 +24,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/vec3.hpp>
+#include <glm/gtx/transform.hpp>
 
 //in house created libraries
 #include "trackball.h"
@@ -144,7 +145,7 @@ void init_base_tree() {
 	// |
 	// head
 
-	std::shared_ptr<tree_node> a = std::make_shared<tree_node>(tree_head, 2.0, 2.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); tree_head->add_child(a);
+	 std::shared_ptr<tree_node> a = std::make_shared<tree_node>(tree_head, 2.0, 2.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); tree_head->add_child(a);
 	std::shared_ptr<tree_node> b = std::make_shared<tree_node>(a, 2.0, 4.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); a->add_child(b);
 	std::shared_ptr<tree_node> c = std::make_shared<tree_node>(b, 1.0, 4.0, 1.0, vec3(1.0f, 0.0f, 0.0f), 30.0f); b->add_child(c);
 	std::shared_ptr<tree_node> d = std::make_shared<tree_node>(b, 1.0, 6.0, 1.0, vec3(1.0f, 0.0f, 0.0f), -30.0f); b->add_child(d);
@@ -152,12 +153,15 @@ void init_base_tree() {
 	std::shared_ptr<tree_node> f = std::make_shared<tree_node>(d, 0.5, 3.0, 0.5, vec3(0.0f, 0.0f, 1.0f), -45.0f); d->add_child(f);
 
 	tree2mesh(tree_head, 1, result_mesh);
-	result_mesh.normalize();
 }
 
 void draw_polygon_mesh(polygon_mesh &mesh) {
-	for(size_t i= 0; i < mesh.verts.size()/2; ++i) {
-		DrawLine(mesh.verts[2 * i + 0], mesh.verts[2 * i + 1]);
+	 vec3 scale; mesh.normalize(1.0f, scale);
+	for(auto &f:mesh.faces) {
+		DrawLine(scale * f->e1->p1->pos, scale * f->e1->p2->pos);
+		DrawLine(scale * f->e2->p1->pos, scale * f->e2->p2->pos);
+		DrawLine(scale * f->e3->p1->pos, scale * f->e3->p2->pos);
+		DrawLine(scale * f->e4->p1->pos, scale * f->e4->p2->pos);
 	}
 }
 
