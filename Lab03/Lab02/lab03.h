@@ -112,3 +112,6 @@ struct polygon_mesh {
 };
 
 void tree2mesh(std::shared_ptr<tree_node> head, int subdivision_num, polygon_mesh &out_mesh);
+
+void catmull_clark_subdivision(std::vector<std::shared_ptr<face>> in_face,
+							   std::vector<std::shared_ptr<face>> &out_face);

@@ -96,8 +96,30 @@ void add_face(std::shared_ptr<edge> e1,
 void tree2mesh(std::shared_ptr<tree_node> head, int subdivision_num, polygon_mesh &out_mesh) {
 	assert(head != nullptr);
 
+	// initialize the tree vertices
 	out_mesh.faces.clear();
 	traverse_tree(head, out_mesh);
+
+	// subdivision
+	for(int i= 1; i <= subdivision_num; ++i) {
+		std::vector<std::shared_ptr<face>> next_iter_faces;
+		catmull_clark_subdivision(out_mesh.faces, next_iter_faces);
+		out_mesh.faces = next_iter_faces;
+	}
+}
+
+void catmull_clark_subdivision(std::vector<std::shared_ptr<face>> in_face, 
+							   std::vector<std::shared_ptr<face>> &out_face) {
+	// compute new face point
+
+	// compute new edge points
+
+	// recompute the old vertices positions
+
+	// connect face point - edge point
+
+	// connect edge point - old vertices
+
 }
 
 // a --- b
