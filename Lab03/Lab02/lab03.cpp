@@ -11,6 +11,8 @@ using glm::vec4;
 using glm::mat4;
 int tree_node::id = 0;
 
+std::set<std::shared_ptr<edge>> edge_set;
+
 void traverse_tree(std::shared_ptr<tree_node> &cur_node, polygon_mesh &out_mesh) {
 	assert(cur_node != nullptr);
 
@@ -49,15 +51,15 @@ void traverse_tree(std::shared_ptr<tree_node> &cur_node, polygon_mesh &out_mesh)
 						add_edge(d, h, dh);
 						add_edge(c, g, cg);
 
-						faces.resize(6);
+						faces.resize(4);
 						// edge to face
-						add_face(ab, bd, dc, ca, faces[0]);
-						 add_face(ab, bf, ef, ae, faces[1]);
-						 add_face(bd, dh, fh, bf, faces[2]);
+						// add_face(ab, bd, dc, ca, faces[0]);
+						add_face(ab, bf, ef, ae, faces[0]);
+						add_face(bd, dh, fh, bf, faces[1]);
 
-						add_face(dc, cg, hg, dh, faces[3]);
-						add_face(ca, ae, ge, cg, faces[4]);
-						add_face(ef, fh, hg, ge, faces[5]);
+						add_face(dc, cg, hg, dh, faces[2]);
+						add_face(ca, ae, ge, cg, faces[3]);
+						//add_face(ef, fh, hg, ge, faces[5]);
 	};
 
 	std::shared_ptr<point> a, b, c, d, e, f, g, h;
@@ -74,10 +76,24 @@ void traverse_tree(std::shared_ptr<tree_node> &cur_node, polygon_mesh &out_mesh)
 
 void add_edge(std::shared_ptr<point> p1, std::shared_ptr<point> p2, std::shared_ptr<edge> &e) {
 	assert(p1 != nullptr && p2 != nullptr);
+	for(auto &ed:edge_set) {
+		if(ed->p1 == p1 && ed->p2 == p2) {
+			e = ed;
+			return;
+		}
+
+		if (ed->p1 == p2 && ed->p2 == p1) {
+			e = ed;
+			return;
+		}
+	}
+
 	e = std::make_shared<edge>(p1, p2);
 
 	p1->edges.push_back(e);
 	p2->edges.push_back(e);
+
+	edge_set.insert(e);
 }
 
 void add_face(std::shared_ptr<edge> e1, 
@@ -97,6 +113,7 @@ void tree2mesh(std::shared_ptr<tree_node> head, int subdivision_num, polygon_mes
 	assert(head != nullptr);
 
 	// initialize the tree vertices
+	edge_set.clear();
 	out_mesh.faces.clear();
 	traverse_tree(head, out_mesh);
 
@@ -115,6 +132,7 @@ std::vector<vec3> old_vert_points;
 void catmull_clark_subdivision(std::vector<std::shared_ptr<face>> in_face, 
 							   std::vector<std::shared_ptr<face>> &out_face) {
 	face_points.clear(); edge_points.clear(); old_vert_points.clear();
+	edge_set.clear();
 
 	std::set<std::shared_ptr<point>> vertices;
 	std::set<std::shared_ptr<edge>> edges;
@@ -123,10 +141,10 @@ void catmull_clark_subdivision(std::vector<std::shared_ptr<face>> in_face,
 	std::unordered_map <std::shared_ptr<edge>, std::shared_ptr<point>> edge_point_map;
 
 	std::set<std::shared_ptr<point>> new_face_points;
-	std::set<std::shared_ptr<point>> new_edge_points;
 
 	auto get_face_point = [&](vec3 face_point_pos) {
 		for(auto &p:new_face_points) {
+
 			if(glm::length(p->pos-face_point_pos) < 1e-2) {
 				return p;
 			}
@@ -134,18 +152,6 @@ void catmull_clark_subdivision(std::vector<std::shared_ptr<face>> in_face,
 
 		std::shared_ptr<point> new_p = std::make_shared<point>(face_point_pos);
 		new_face_points.insert(new_p);
-		return new_p;
-	};
-
-	auto get_edge_point = [&](vec3 edge_point_pos) {
-		for (auto &p : new_edge_points) {
-			if (glm::length(p->pos - edge_point_pos) < 1e-2) {
-				return p;
-			}
-		}
-
-		std::shared_ptr<point> new_p = std::make_shared<point>(edge_point_pos);
-		new_edge_points.insert(new_p);
 		return new_p;
 	};
 
@@ -187,8 +193,7 @@ void catmull_clark_subdivision(std::vector<std::shared_ptr<face>> in_face,
 		}
 
 		edge_point_pos = edge_point_pos / (float)avg_num;
-		// std::shared_ptr<point> new_edge_point = std::make_shared<point>(edge_point_pos);
-		auto new_edge_point = get_edge_point(edge_point_pos);
+		std::shared_ptr<point> new_edge_point = std::make_shared<point>(edge_point_pos);
 		edge_point_map[e] = new_edge_point;
 	}
 
