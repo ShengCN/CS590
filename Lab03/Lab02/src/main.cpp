@@ -51,7 +51,7 @@ GLfloat  angleIncrement=defaultIncrement;
 /*********************************
 	Lab 3 related
 **********************************/
-int subdivision_num = 10;
+int subdivision_num = 2;
 vector <vec3> v;  
 vector <vec3> tree_box;
 vector <vec3> visualize_points;
@@ -63,7 +63,7 @@ GLint hWindow=800;
 //this defines what will be rendered
 //see Key() how is it controlled
 bool tangentsFlag = false;
-bool pointsFlag = true;
+bool pointsFlag = false;
 bool curveFlag = true;
 
 /*********************************
@@ -145,14 +145,14 @@ void init_base_tree() {
 	// |
 	// head
 
-	 std::shared_ptr<tree_node> a = std::make_shared<tree_node>(tree_head, 2.0, 2.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); tree_head->add_child(a);
-	std::shared_ptr<tree_node> b = std::make_shared<tree_node>(a, 2.0, 4.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); a->add_child(b);
-	std::shared_ptr<tree_node> c = std::make_shared<tree_node>(b, 1.0, 4.0, 1.0, vec3(1.0f, 0.0f, 0.0f), 30.0f); b->add_child(c);
-	std::shared_ptr<tree_node> d = std::make_shared<tree_node>(b, 1.0, 6.0, 1.0, vec3(1.0f, 0.0f, 0.0f), -30.0f); b->add_child(d);
-	std::shared_ptr<tree_node> e = std::make_shared<tree_node>(d, 0.5, 3.0, 0.5, vec3(0.0f, 0.0f, 1.0f), 45.0f); d->add_child(e);
-	std::shared_ptr<tree_node> f = std::make_shared<tree_node>(d, 0.5, 3.0, 0.5, vec3(0.0f, 0.0f, 1.0f), -45.0f); d->add_child(f);
+	//std::shared_ptr<tree_node> a = std::make_shared<tree_node>(tree_head, 2.0, 2.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); tree_head->add_child(a);
+	//std::shared_ptr<tree_node> b = std::make_shared<tree_node>(a, 2.0, 4.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); a->add_child(b);
+	//std::shared_ptr<tree_node> c = std::make_shared<tree_node>(b, 1.0, 4.0, 1.0, vec3(1.0f, 0.0f, 0.0f), 30.0f); b->add_child(c);
+	//std::shared_ptr<tree_node> d = std::make_shared<tree_node>(b, 1.0, 6.0, 1.0, vec3(1.0f, 0.0f, 0.0f), -30.0f); b->add_child(d);
+	//std::shared_ptr<tree_node> e = std::make_shared<tree_node>(d, 0.5, 3.0, 0.5, vec3(0.0f, 0.0f, 1.0f), 45.0f); d->add_child(e);
+	//std::shared_ptr<tree_node> f = std::make_shared<tree_node>(d, 0.5, 3.0, 0.5, vec3(0.0f, 0.0f, 1.0f), -45.0f); d->add_child(f);
 
-	tree2mesh(tree_head, 1, result_mesh);
+	tree2mesh(tree_head, subdivision_num, result_mesh);
 }
 
 void draw_polygon_mesh(polygon_mesh &mesh) {
@@ -183,6 +183,7 @@ void CoordSyst() {
 
 }
 
+extern std::vector<vec3> face_points, edge_points, old_vert_points;
 void Lab03() {
 	vec3 origin(0, 0, 0);
 	vec3 red(1, 0, 0), green(0, 1, 0), blue(0, 0, 1), almostBlack(0.1f, 0.1f, 0.1f), yellow(1, 1, 0);
@@ -190,9 +191,11 @@ void Lab03() {
 	CoordSyst();
 	//draw the points
 	if (pointsFlag) {
-		for (unsigned int i = 0; i < v.size(); i++) {
-			DrawPoint(v[i], blue);
-		}
+		vec3 scale; result_mesh.normalize(1.0f, scale);
+
+		for (auto &v: face_points)  DrawPoint(v * scale, blue);
+		for (auto &v : edge_points)  DrawPoint(v * scale, yellow);
+		for (auto &v : old_vert_points)  DrawPoint(v * scale, red);
 	}
 
 	// visualize box
@@ -229,10 +232,15 @@ void Kbd(unsigned char a, int x, int y)//keyboard callback
 	case '-': {
 			subdivision_num--;
 			subdivision_num = std::max(1, subdivision_num);
+
+			tree2mesh(tree_head, subdivision_num, result_mesh);
+
 		break;
 	}
 	case '+': {
 			subdivision_num++;
+			tree2mesh(tree_head, subdivision_num, result_mesh);
+
 		break;
 	}
 	}
@@ -253,7 +261,7 @@ void Display(void)
 {
 	glClearColor(0.5f, 0.5f, 0.5f, 1); //background color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	GLMessage("Lab 2 - CS 590CGS");
+	GLMessage("Lab 3 - CS 590CGS");
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(40, (GLfloat)wWindow / (GLfloat)hWindow, 0.01, 100); //set the camera

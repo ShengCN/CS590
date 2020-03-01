@@ -108,18 +108,127 @@ void tree2mesh(std::shared_ptr<tree_node> head, int subdivision_num, polygon_mes
 	}
 }
 
+std::vector<vec3> face_points;
+std::vector<vec3> edge_points;
+std::vector<vec3> old_vert_points;
+
 void catmull_clark_subdivision(std::vector<std::shared_ptr<face>> in_face, 
 							   std::vector<std::shared_ptr<face>> &out_face) {
+	face_points.clear(); edge_points.clear(); old_vert_points.clear();
+
+	std::set<std::shared_ptr<point>> vertices;
+	std::set<std::shared_ptr<edge>> edges;
+	
+	std::unordered_map <std::shared_ptr<face>, std::shared_ptr<point>> face_point_map;
+	std::unordered_map <std::shared_ptr<edge>, std::shared_ptr<point>> edge_point_map;
+
 	// compute new face point
+	for(auto &f:in_face) {
+		vec3 face_point_pos(0.0f);
+		face_point_pos = (f->e1->p1->pos + f->e1->p2->pos + 
+						  f->e2->p1->pos + f->e2->p2->pos + 
+						  f->e3->p1->pos + f->e3->p2->pos + 
+						  f->e4->p1->pos + f->e4->p2->pos) / 8.0f;
+		std::shared_ptr<point> face_point = std::make_shared<point>(face_point_pos);
+		face_point_map[f] = face_point;
+
+		vertices.insert(f->e1->p1);
+		vertices.insert(f->e2->p1);
+		vertices.insert(f->e3->p1);
+		vertices.insert(f->e4->p1);
+
+		edges.insert(f->e1);
+		edges.insert(f->e2);
+		edges.insert(f->e3);
+		edges.insert(f->e4);
+	}
 
 	// compute new edge points
+	for(auto &e:edges) {
+		vec3 edge_point_pos(0.0f);
+		int avg_num = 2;
+		edge_point_pos += e->p1->pos; edge_point_pos += e->p2->pos;
+		for(auto &f:e->faces) {
+			avg_num++;
+			edge_point_pos += face_point_map.at(f)->pos;
+		}
+
+		edge_point_pos = edge_point_pos / (float)avg_num;
+		std::shared_ptr<point> new_edge_point = std::make_shared<point>(edge_point_pos);
+		edge_point_map[e] = new_edge_point;
+	}
 
 	// recompute the old vertices positions
+	// F + 2R + (n-3)p /n
+	for(auto &p:vertices) {
+		std::set<std::shared_ptr<point>> adj_face_point;
+		vec3 f(0.0f),r(0.0f);
 
-	// connect face point - edge point
+		for(auto &e:p->edges) {
+			for(auto &f:e->faces) {
+				adj_face_point.insert(face_point_map.at(f));
+			}
+			r += 0.5f * (e->p1->pos + e->p2->pos);
+		}
+		r = r / (float)p->edges.size();
 
-	// connect edge point - old vertices
+		for(auto &adj_fp:adj_face_point) {
+			f += adj_fp->pos;
+		}
+		f = f / (float)adj_face_point.size();
 
+		float n = p->edges.size();
+		p->pos = (f + 2.0f * r + (n - 3) * p->pos) / n;
+		old_vert_points.push_back((f + 2.0f * r + (n - 3) * p->pos) / n);
+	}
+
+	auto find_same_face = [](std::shared_ptr<edge> a, std::shared_ptr<edge> b) {
+		for(auto &af:a->faces) {
+			for(auto &bf:b->faces) {
+				if (af == bf)
+					return af;
+			}
+		}
+
+		std::shared_ptr<face> not_found = nullptr;
+		return not_found;
+	};
+
+	// reconstruct the faces given those points
+	for(auto &old_vert:vertices) {
+		std::shared_ptr<point> new_p = std::make_shared<point>(old_vert->pos);
+		auto &edges = old_vert->edges;
+
+		// iterate over all the edge pairs 
+		for(size_t ei = 0; ei < edges.size()-1; ++ei) {
+			for(size_t eii = ei + 1; eii < edges.size(); ++eii) {
+				auto ei_edge = edges[ei];
+				auto eii_edge = edges[eii];
+				auto ei_edge_point = edge_point_map.at(ei_edge);
+				auto eii_edge_point = edge_point_map.at(eii_edge);
+
+				auto the_face = find_same_face(ei_edge, eii_edge);
+				if(the_face == nullptr) {
+					continue;
+				}
+
+				auto face_point = face_point_map.at(the_face);
+				
+				std::shared_ptr<edge> e1, e2, e3, e4;
+				add_edge(new_p, ei_edge_point, e1);
+				add_edge(ei_edge_point, face_point, e2);
+				add_edge(face_point, eii_edge_point, e3);
+				add_edge(eii_edge_point, new_p, e4);
+
+				std::shared_ptr<face> new_face;
+				add_face(e1, e2, e3, e4, new_face);
+				out_face.push_back(new_face);
+			}
+		}
+	}
+
+	for(auto &m:face_point_map)  face_points.push_back(m.second->pos);
+	for (auto &m : edge_point_map)  edge_points.push_back(m.second->pos);
 }
 
 // a --- b
