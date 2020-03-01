@@ -13,7 +13,7 @@ int tree_node::id = 0;
 
 std::set<std::shared_ptr<edge>> edge_set;
 
-void traverse_tree(std::shared_ptr<tree_node> &cur_node, polygon_mesh &out_mesh) {
+void traverse_tree(std::shared_ptr<tree_node> &cur_node, polygon_mesh &out_mesh, int iter) {
 	assert(cur_node != nullptr);
 
 	// a --- b
@@ -63,14 +63,14 @@ void traverse_tree(std::shared_ptr<tree_node> &cur_node, polygon_mesh &out_mesh)
 	};
 
 	std::shared_ptr<point> a, b, c, d, e, f, g, h;
-	cur_node->compute_box_point(a, b, c, d, e, f, g, h);
+	cur_node->compute_box_point(a, b, c, d, e, f, g, h, iter);
 	
 	std::vector<std::shared_ptr<face>> faces;
 	compute_face(a, b, c, d, e, f, g, h, faces);
 	out_mesh.faces.insert(out_mesh.faces.end(), faces.begin(), faces.end());
 
 	for (auto &c : cur_node->children_list) {
-		traverse_tree(c, out_mesh);
+		traverse_tree(c, out_mesh, iter);
 	}
 }
 
@@ -109,13 +109,13 @@ void add_face(std::shared_ptr<edge> e1,
 	e4->faces.push_back(f);
 }
 
-void tree2mesh(std::shared_ptr<tree_node> head, int subdivision_num, polygon_mesh &out_mesh) {
+void tree2mesh(std::shared_ptr<tree_node> head, int subdivision_num, polygon_mesh &out_mesh, int iter) {
 	assert(head != nullptr);
 
 	// initialize the tree vertices
 	edge_set.clear();
 	out_mesh.faces.clear();
-	traverse_tree(head, out_mesh);
+	traverse_tree(head, out_mesh, iter);
 
 	// subdivision
 	for(int i= 1; i <= subdivision_num; ++i) {
@@ -309,7 +309,15 @@ void catmull_clark_subdivision(std::vector<std::shared_ptr<face>> in_face,
 // c --- d  |
 //  \ |   \ |
 //    g----- h
-void tree_node::compute_box_point(std::shared_ptr<point> &a, std::shared_ptr<point> &b, std::shared_ptr<point> &c, std::shared_ptr<point> &d, std::shared_ptr<point> &e, std::shared_ptr<point> &f, std::shared_ptr<point> &g, std::shared_ptr<point> &h) {
+void tree_node::compute_box_point(std::shared_ptr<point> &a, 
+								  std::shared_ptr<point> &b, 
+								  std::shared_ptr<point> &c, 
+								  std::shared_ptr<point> &d, 
+								  std::shared_ptr<point> &e, 
+								  std::shared_ptr<point> &f, 
+								  std::shared_ptr<point> &g, 
+								  std::shared_ptr<point> &h,
+								  int iter) {
 	// head node
 	vec3 x(1.0f, 0.0f, 0.0f), y(0.0f, 1.0f, 0.0f), z(0.0f, 0.0f, 1.0f);
 	if (parent_node == nullptr) {
@@ -333,7 +341,7 @@ void tree_node::compute_box_point(std::shared_ptr<point> &a, std::shared_ptr<poi
 		// a,b,c,d are coming from parent node
 		// e,f,g,h are coming from current node
 		auto &abcd = parent_node->node_four_points;
-		mat4 rot_mat = glm::rotate(deg2rad(global_rotation_deg), global_rotation_axis);
+		mat4 rot_mat = glm::rotate(deg2rad(global_rotation_deg + 20.0f * sin(iter)), global_rotation_axis);
 		x = rot_mat * vec4(x, 0.0f);
 		y = rot_mat * vec4(y, 0.0f);
 		z = rot_mat * vec4(z, 0.0f);

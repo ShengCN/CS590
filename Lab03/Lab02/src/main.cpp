@@ -254,8 +254,7 @@ void Kbd(unsigned char a, int x, int y)//keyboard callback
 /*******************
 OpenGL code. Do not touch.
 ******************/
-void Idle(void)
-{
+void Idle(void) {
 }
 
 void Display(void)

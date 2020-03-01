@@ -101,7 +101,8 @@ struct tree_node {
 					 std::shared_ptr<point> &e, 
 					 std::shared_ptr<point> &f, 
 					 std::shared_ptr<point> &g, 
-					 std::shared_ptr<point> &h);
+					 std::shared_ptr<point> &h,
+					 int iter);
 };
 
 /* polygonal mesh */
@@ -111,7 +112,7 @@ struct polygon_mesh {
 	void normalize(float scale_fact, glm::vec3 &scale, glm::vec3 &center);
 };
 
-void tree2mesh(std::shared_ptr<tree_node> head, int subdivision_num, polygon_mesh &out_mesh);
+void tree2mesh(std::shared_ptr<tree_node> head, int subdivision_num, polygon_mesh &out_mesh, int iter=0);
 
 void catmull_clark_subdivision(std::vector<std::shared_ptr<face>> in_face,
 							   std::vector<std::shared_ptr<face>> &out_face);
