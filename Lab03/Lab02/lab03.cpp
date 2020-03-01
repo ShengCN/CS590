@@ -133,9 +133,16 @@ void catmull_clark_subdivision(std::vector<std::shared_ptr<face>> in_face,
 		face_point_map[f] = face_point;
 
 		vertices.insert(f->e1->p1);
+		vertices.insert(f->e1->p2);
+
 		vertices.insert(f->e2->p1);
+		vertices.insert(f->e2->p2);
+
 		vertices.insert(f->e3->p1);
+		vertices.insert(f->e3->p2);
+
 		vertices.insert(f->e4->p1);
+		vertices.insert(f->e4->p2);
 
 		edges.insert(f->e1);
 		edges.insert(f->e2);
@@ -194,7 +201,21 @@ void catmull_clark_subdivision(std::vector<std::shared_ptr<face>> in_face,
 		return not_found;
 	};
 
+	auto find_edge = [](std::shared_ptr<point> p1, 
+						std::shared_ptr<point> p2, 
+						std::set<std::shared_ptr<edge>> &edge_set) {
+		for(auto &e:edge_set) {
+			if (e->p1 == p1 && e->p2 == p2) return e;
+
+			if (e->p1 == p2 && e->p2 == p1) return e;
+		}
+
+		std::shared_ptr<edge> not_found = nullptr;
+		return not_found;
+	};
+
 	// reconstruct the faces given those points
+	std::set<std::shared_ptr<edge>> new_edges;
 	for(auto &old_vert:vertices) {
 		std::shared_ptr<point> new_p = std::make_shared<point>(old_vert->pos);
 		auto &edges = old_vert->edges;
@@ -215,10 +236,29 @@ void catmull_clark_subdivision(std::vector<std::shared_ptr<face>> in_face,
 				auto face_point = face_point_map.at(the_face);
 				
 				std::shared_ptr<edge> e1, e2, e3, e4;
-				add_edge(new_p, ei_edge_point, e1);
-				add_edge(ei_edge_point, face_point, e2);
-				add_edge(face_point, eii_edge_point, e3);
-				add_edge(eii_edge_point, new_p, e4);
+				e1 = find_edge(new_p, ei_edge_point, new_edges);
+				if(e1 == nullptr) {
+					add_edge(new_p, ei_edge_point, e1);
+					new_edges.insert(e1);
+				}
+				
+				e2 = find_edge(ei_edge_point, face_point, new_edges);
+				if (e2 == nullptr) {
+					add_edge(ei_edge_point, face_point, e2);
+					new_edges.insert(e2);
+				}
+
+				e3 = find_edge(face_point, eii_edge_point, new_edges);
+				if (e3 == nullptr) {
+					add_edge(face_point, eii_edge_point, e3);
+					new_edges.insert(e3);
+				}
+
+				e4 = find_edge(eii_edge_point, new_p, new_edges);
+				if (e4 == nullptr) {
+					add_edge(eii_edge_point, new_p, e4);
+					new_edges.insert(e4);
+				}
 
 				std::shared_ptr<face> new_face;
 				add_face(e1, e2, e3, e4, new_face);

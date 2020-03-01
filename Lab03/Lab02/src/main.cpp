@@ -51,7 +51,7 @@ GLfloat  angleIncrement=defaultIncrement;
 /*********************************
 	Lab 3 related
 **********************************/
-int subdivision_num = 2;
+int subdivision_num = 0;
 vector <vec3> v;  
 vector <vec3> tree_box;
 vector <vec3> visualize_points;
@@ -145,12 +145,12 @@ void init_base_tree() {
 	// |
 	// head
 
-	//std::shared_ptr<tree_node> a = std::make_shared<tree_node>(tree_head, 2.0, 2.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); tree_head->add_child(a);
-	//std::shared_ptr<tree_node> b = std::make_shared<tree_node>(a, 2.0, 4.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); a->add_child(b);
-	//std::shared_ptr<tree_node> c = std::make_shared<tree_node>(b, 1.0, 4.0, 1.0, vec3(1.0f, 0.0f, 0.0f), 30.0f); b->add_child(c);
-	//std::shared_ptr<tree_node> d = std::make_shared<tree_node>(b, 1.0, 6.0, 1.0, vec3(1.0f, 0.0f, 0.0f), -30.0f); b->add_child(d);
-	//std::shared_ptr<tree_node> e = std::make_shared<tree_node>(d, 0.5, 3.0, 0.5, vec3(0.0f, 0.0f, 1.0f), 45.0f); d->add_child(e);
-	//std::shared_ptr<tree_node> f = std::make_shared<tree_node>(d, 0.5, 3.0, 0.5, vec3(0.0f, 0.0f, 1.0f), -45.0f); d->add_child(f);
+	std::shared_ptr<tree_node> a = std::make_shared<tree_node>(tree_head, 2.0, 2.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); tree_head->add_child(a);
+	std::shared_ptr<tree_node> b = std::make_shared<tree_node>(a, 2.0, 4.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); a->add_child(b);
+	std::shared_ptr<tree_node> c = std::make_shared<tree_node>(b, 1.0, 4.0, 1.0, vec3(1.0f, 0.0f, 0.0f), 30.0f); b->add_child(c);
+	std::shared_ptr<tree_node> d = std::make_shared<tree_node>(b, 1.0, 6.0, 1.0, vec3(1.0f, 0.0f, 0.0f), -30.0f); b->add_child(d);
+	std::shared_ptr<tree_node> e = std::make_shared<tree_node>(d, 0.5, 3.0, 0.5, vec3(0.0f, 0.0f, 1.0f), 45.0f); d->add_child(e);
+	std::shared_ptr<tree_node> f = std::make_shared<tree_node>(d, 0.5, 3.0, 0.5, vec3(0.0f, 0.0f, 1.0f), -45.0f); d->add_child(f);
 
 	tree2mesh(tree_head, subdivision_num, result_mesh);
 }
@@ -231,7 +231,7 @@ void Kbd(unsigned char a, int x, int y)//keyboard callback
 	case 's': {sign = -sign; break; }
 	case '-': {
 			subdivision_num--;
-			subdivision_num = std::max(1, subdivision_num);
+			subdivision_num = std::max(0, subdivision_num);
 
 			tree2mesh(tree_head, subdivision_num, result_mesh);
 
