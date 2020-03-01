@@ -122,6 +122,33 @@ void catmull_clark_subdivision(std::vector<std::shared_ptr<face>> in_face,
 	std::unordered_map <std::shared_ptr<face>, std::shared_ptr<point>> face_point_map;
 	std::unordered_map <std::shared_ptr<edge>, std::shared_ptr<point>> edge_point_map;
 
+	std::set<std::shared_ptr<point>> new_face_points;
+	std::set<std::shared_ptr<point>> new_edge_points;
+
+	auto get_face_point = [&](vec3 face_point_pos) {
+		for(auto &p:new_face_points) {
+			if(glm::length(p->pos-face_point_pos) < 1e-2) {
+				return p;
+			}
+		}
+
+		std::shared_ptr<point> new_p = std::make_shared<point>(face_point_pos);
+		new_face_points.insert(new_p);
+		return new_p;
+	};
+
+	auto get_edge_point = [&](vec3 edge_point_pos) {
+		for (auto &p : new_edge_points) {
+			if (glm::length(p->pos - edge_point_pos) < 1e-2) {
+				return p;
+			}
+		}
+
+		std::shared_ptr<point> new_p = std::make_shared<point>(edge_point_pos);
+		new_edge_points.insert(new_p);
+		return new_p;
+	};
+
 	// compute new face point
 	for(auto &f:in_face) {
 		vec3 face_point_pos(0.0f);
@@ -129,8 +156,7 @@ void catmull_clark_subdivision(std::vector<std::shared_ptr<face>> in_face,
 						  f->e2->p1->pos + f->e2->p2->pos + 
 						  f->e3->p1->pos + f->e3->p2->pos + 
 						  f->e4->p1->pos + f->e4->p2->pos) / 8.0f;
-		std::shared_ptr<point> face_point = std::make_shared<point>(face_point_pos);
-		face_point_map[f] = face_point;
+		face_point_map[f] = get_face_point(face_point_pos);
 
 		vertices.insert(f->e1->p1);
 		vertices.insert(f->e1->p2);
@@ -161,7 +187,8 @@ void catmull_clark_subdivision(std::vector<std::shared_ptr<face>> in_face,
 		}
 
 		edge_point_pos = edge_point_pos / (float)avg_num;
-		std::shared_ptr<point> new_edge_point = std::make_shared<point>(edge_point_pos);
+		// std::shared_ptr<point> new_edge_point = std::make_shared<point>(edge_point_pos);
+		auto new_edge_point = get_edge_point(edge_point_pos);
 		edge_point_map[e] = new_edge_point;
 	}
 
