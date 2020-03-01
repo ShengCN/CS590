@@ -353,7 +353,7 @@ void tree_node::compute_box_point(std::shared_ptr<point> &a, std::shared_ptr<poi
 	node_four_points[3] = h;
 }
 
-void polygon_mesh::normalize(float scale_fact, glm::vec3 &scale) {
+void polygon_mesh::normalize(float scale_fact, glm::vec3 &scale, glm::vec3 &center) {
 	if (faces.empty())
 		return;
 
@@ -374,4 +374,7 @@ void polygon_mesh::normalize(float scale_fact, glm::vec3 &scale) {
 
 	float diag_length = glm::length(poly_aabb.diagonal());
 	scale = vec3(scale_fact * 1.0f / diag_length);
+
+	center = (poly_aabb.p0 + poly_aabb.p1) * 0.5f;
 }
+

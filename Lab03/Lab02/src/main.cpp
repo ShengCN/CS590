@@ -156,12 +156,13 @@ void init_base_tree() {
 }
 
 void draw_polygon_mesh(polygon_mesh &mesh) {
-	 vec3 scale; mesh.normalize(1.0f, scale);
+	vec3 center, scale; mesh.normalize(1.5f, scale, center);
+	center = center * scale;
 	for(auto &f:mesh.faces) {
-		DrawLine(scale * f->e1->p1->pos, scale * f->e1->p2->pos);
-		DrawLine(scale * f->e2->p1->pos, scale * f->e2->p2->pos);
-		DrawLine(scale * f->e3->p1->pos, scale * f->e3->p2->pos);
-		DrawLine(scale * f->e4->p1->pos, scale * f->e4->p2->pos);
+		DrawLine(scale * f->e1->p1->pos - center, scale * f->e1->p2->pos- center);
+		DrawLine(scale * f->e2->p1->pos - center, scale * f->e2->p2->pos- center);
+		DrawLine(scale * f->e3->p1->pos - center, scale * f->e3->p2->pos- center);
+		DrawLine(scale * f->e4->p1->pos - center, scale * f->e4->p2->pos- center);
 	}
 }
 
@@ -191,11 +192,11 @@ void Lab03() {
 	CoordSyst();
 	//draw the points
 	if (pointsFlag) {
-		vec3 scale; result_mesh.normalize(1.0f, scale);
+		vec3 center,scale; result_mesh.normalize(1.0f, scale, center);
 
-		for (auto &v: face_points)  DrawPoint(v * scale, blue);
-		for (auto &v : edge_points)  DrawPoint(v * scale, yellow);
-		for (auto &v : old_vert_points)  DrawPoint(v * scale, red);
+		for (auto &v: face_points)  DrawPoint(v * scale - center, blue);
+		for (auto &v : edge_points)  DrawPoint(v * scale - center, yellow);
+		for (auto &v : old_vert_points)  DrawPoint(v * scale - center, red);
 	}
 
 	// visualize box

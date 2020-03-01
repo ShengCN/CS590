@@ -108,7 +108,7 @@ struct tree_node {
 struct polygon_mesh { 
 	std::vector<std::shared_ptr<face>> faces;
 
-	void normalize(float scale_fact, glm::vec3 &scale);
+	void normalize(float scale_fact, glm::vec3 &scale, glm::vec3 &center);
 };
 
 void tree2mesh(std::shared_ptr<tree_node> head, int subdivision_num, polygon_mesh &out_mesh);
