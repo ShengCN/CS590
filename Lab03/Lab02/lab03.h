@@ -2,10 +2,11 @@
 #include <random>
 #include <vector>
 #include <functional>
-
+#include <set>
 #include <sstream>
 #include <iostream>
 #include <glm/glm.hpp>
+#include <string>
 using glm::vec3;
 
 struct aabb {
@@ -70,6 +71,11 @@ void add_face(std::shared_ptr<edge> e1,
 			  std::shared_ptr<edge> e4,
 			  std::shared_ptr<face> &f);
 
+void remove_face(std::shared_ptr<edge> e1,
+				 std::shared_ptr<edge> e2,
+				 std::shared_ptr<edge> e3,
+				 std::shared_ptr<edge> e4,
+				 std::vector<std::shared_ptr<face>> &out_mesh_faces);
 
 /* Data structure to define a tree node */
 struct tree_node {
@@ -78,13 +84,17 @@ struct tree_node {
 	float width, height, thickness;
 	vec3 global_rotation_axis;
 	float global_rotation_deg;
-	std::vector<std::shared_ptr<point>> node_four_points;
+	std::vector<std::shared_ptr<point>> eight_corner_point;
 
 	static int id;
 	int cur_id;
 
 	// functions
-	tree_node(std::shared_ptr<tree_node> parent, float w, float h, float t, vec3 axis,float r):
+	tree_node(std::shared_ptr<tree_node> parent, 
+			  float w, float h, 
+			  float t,
+			  vec3 axis, 
+			  float r):
 		parent_node(parent) , width(w), height(h), thickness(t), 
 		global_rotation_axis(axis), global_rotation_deg(r) {
 		id++; cur_id = id;
@@ -116,3 +126,5 @@ void tree2mesh(std::shared_ptr<tree_node> head, int subdivision_num, polygon_mes
 
 void catmull_clark_subdivision(std::vector<std::shared_ptr<face>> in_face,
 							   std::vector<std::shared_ptr<face>> &out_face);
+
+void save_obj(polygon_mesh &save_mesh,const std::string fname);

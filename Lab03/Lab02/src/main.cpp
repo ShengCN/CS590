@@ -29,6 +29,7 @@
 //in house created libraries
 #include "trackball.h"
 #include "lab03.h"
+#include "timer.h"
 
 #pragma warning(disable : 4996)
 #pragma comment(lib, "freeglut.lib")
@@ -137,6 +138,8 @@ void init_base_tree() {
 	
 	//   e  f
 	//   | /
+	//   dd
+	//   |
 	// c d
 	// |/
 	// b
@@ -147,10 +150,12 @@ void init_base_tree() {
 
 	std::shared_ptr<tree_node> a = std::make_shared<tree_node>(tree_head, 2.0, 2.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); tree_head->add_child(a);
 	std::shared_ptr<tree_node> b = std::make_shared<tree_node>(a, 2.0, 4.0, 2.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); a->add_child(b);
-	std::shared_ptr<tree_node> c = std::make_shared<tree_node>(b, 1.0, 4.0, 1.0, vec3(1.0f, 0.0f, 0.0f), 30.0f); b->add_child(c);
+	std::shared_ptr<tree_node> c = std::make_shared<tree_node>(b, 1.0, 6.0, 1.0, vec3(1.0f, 0.0f, 0.0f), 60.0f); b->add_child(c);
 	std::shared_ptr<tree_node> d = std::make_shared<tree_node>(b, 1.0, 6.0, 1.0, vec3(1.0f, 0.0f, 0.0f), -30.0f); b->add_child(d);
-	std::shared_ptr<tree_node> e = std::make_shared<tree_node>(d, 0.5, 3.0, 0.5, vec3(0.0f, 0.0f, 1.0f), 45.0f); d->add_child(e);
-	std::shared_ptr<tree_node> f = std::make_shared<tree_node>(d, 0.5, 3.0, 0.5, vec3(0.0f, 0.0f, 1.0f), -45.0f); d->add_child(f);
+	std::shared_ptr<tree_node> dd = std::make_shared<tree_node>(d, 1.0, 1.0, 1.0, vec3(1.0f, 0.0f, 0.0f), 0.0f); d->add_child(dd);
+
+	std::shared_ptr<tree_node> e = std::make_shared<tree_node>(dd, 0.5, 3.0, 0.5, vec3(0.0f, 0.0f, 1.0f), 65.0f); dd->add_child(e);
+	std::shared_ptr<tree_node> f = std::make_shared<tree_node>(dd, 0.5, 3.0, 0.5, vec3(1.0f, 0.0f, 0.0f), 0.0f); dd->add_child(f);
 
 	tree2mesh(tree_head, subdivision_num, result_mesh);
 }
@@ -230,6 +235,10 @@ void Kbd(unsigned char a, int x, int y)//keyboard callback
 		break;
 	}
 	case 's': {sign = -sign; break; }
+	case 'z':{
+			save_obj(result_mesh,"output.obj");
+			break;
+		}
 	case '-': {
 			subdivision_num--;
 			subdivision_num = std::max(0, subdivision_num);
